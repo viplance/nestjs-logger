@@ -1,21 +1,25 @@
 import { Module, DynamicModule, Global } from "@nestjs/common";
-import { CustomLoggerService } from "./logger.service";
+import { LogService } from "./log.service";
+import { LogDbService } from "./db.service";
 
-export interface LoggerModuleOptions {
+export interface LogModuleOptions {
   prefix?: string;
 }
 
 @Global()
 @Module({})
-export class CustomLoggerModule {
-  static forRoot(options: LoggerModuleOptions = {}): DynamicModule {
+export class LogModule {
+  static forRoot(options: LogModuleOptions = {}): DynamicModule {
     return {
-      module: CustomLoggerModule,
+      module: LogModule,
       providers: [
         {
-          provide: CustomLoggerService,
-          useFactory: () => {
-            return new (class extends CustomLoggerService {
+          provide: LogService,
+          useFactory: (logDbService: LogDbService) => {
+            return new (class extends LogService {
+              constructor(logDbService: LogDbService) {
+                super(logDbService);
+              }
               override log(message: string, context?: string) {
                 super.log(`${options.prefix ?? ""}${message}`, context);
               }
@@ -33,11 +37,12 @@ export class CustomLoggerModule {
               override warn(message: string, context?: string) {
                 super.warn(`${options.prefix ?? ""}${message}`, context);
               }
-            })();
+            })(logDbService);
           },
         },
+        LogDbService,
       ],
-      exports: [CustomLoggerService],
+      exports: [LogService],
     };
   }
 }

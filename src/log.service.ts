@@ -1,7 +1,9 @@
 import { Injectable, LoggerService, Scope } from "@nestjs/common";
-
+import { LogDbService } from "./db.service";
 @Injectable({ scope: Scope.TRANSIENT })
-export class CustomLoggerService implements LoggerService {
+export class LogService implements LoggerService {
+  constructor(private readonly logDbService: LogDbService) {}
+
   log(message: string, context?: string) {
     console.log(`[LOG]${context ? " [" + context + "]" : ""}: ${message}`);
   }
