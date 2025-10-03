@@ -9,7 +9,9 @@ const defaultTable = "logs";
 export class LogDbService {
   private db: { [key: string]: any[] } = {};
 
-  constructor(tables: string[] = [defaultTable]) {
+  constructor() {
+    const tables = [defaultTable];
+
     for (const table of tables) {
       this.db[table] = [];
     }

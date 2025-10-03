@@ -1,4 +1,9 @@
-import { Injectable, LoggerService, Scope } from "@nestjs/common";
+import {
+  ExecutionContext,
+  Injectable,
+  LoggerService,
+  Scope,
+} from "@nestjs/common";
 import { LogDbService } from "./db.service";
 @Injectable({ scope: Scope.TRANSIENT })
 export class LogService implements LoggerService {
@@ -8,7 +13,7 @@ export class LogService implements LoggerService {
     console.log(`[LOG]${context ? " [" + context + "]" : ""}: ${message}`);
   }
 
-  error(message: string, trace?: string, context?: string) {
+  error(message: string, trace?: string, context?: ExecutionContext) {
     console.error(`[ERROR]${context ? " [" + context + "]" : ""}: ${message}`);
     if (trace) {
       console.error(trace);
