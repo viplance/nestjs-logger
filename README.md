@@ -13,10 +13,9 @@
     })
 3. Use the LogService in case of custom logs.
 3. If you want to catch all errors automatically, put the code in main.ts
-    import { LogInterceptor, LogService } from '@viplance/nestjs-logger';
+    import { LogModule } from '@viplance/nestjs-logger';
 
-    const logService = await app.resolve(LogService);
-    app.useGlobalInterceptors(new LogInterceptor(logService));
+    await LogModule.connect(app); // it should be an async connection to NestFactory.create(AppModule)
 
 Available service methods:
 - log()

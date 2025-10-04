@@ -2,22 +2,21 @@
 
 import { Injectable } from "@nestjs/common";
 import { createHash, randomBytes } from "crypto";
+import { defaultTable } from "../defaults";
 
-const defaultTable = "logs";
+const tables = [defaultTable];
 
 @Injectable()
 export class LogDbService {
   private db: { [key: string]: any[] } = {};
 
   constructor() {
-    const tables = [defaultTable];
-
     for (const table of tables) {
       this.db[table] = [];
     }
   }
 
-  public insert(data: any, table = defaultTable): string {
+  public insert(table: string, data: any): string {
     // generate new random ID
     const randomData = randomBytes(32).toString("hex");
     const id = createHash("sha256").update(randomData).digest("hex");
@@ -27,22 +26,23 @@ export class LogDbService {
       id, // creader unique index
     });
 
+    console.log(this.db);
+
     return id;
   }
 
   public getMany(table: string): any[] {
-    return this.db[table];
+    return this.db[table].map((log) => ({
+      type: log.type,
+      message: log.message,
+    }));
   }
 
-  public getOneById(id: string, table = defaultTable): any {
+  public getOneById(table: string, id: string): any {
     return this.db[table].find((item) => item.id === id);
   }
 
-  public getManyByProperty(
-    field: string,
-    value: string,
-    table = defaultTable
-  ): any[] {
+  public getManyByProperty(table: string, field: string, value: string): any[] {
     return this.db[table].filter((item) => item[field] === value);
   }
 }
