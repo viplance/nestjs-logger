@@ -4,13 +4,41 @@ import {
   LoggerService,
   Scope,
 } from "@nestjs/common";
-import { LogDbService } from "./db.service";
+import { MemoryDbService } from "./memory-db.service";
 import { defaultTable } from "../defaults";
-import { LogType } from "../types";
+import { LogModuleOptions, LogType } from "../types";
+import { DataSource, DataSourceOptions, EntitySchema } from "typeorm";
+import { createLogEntity } from "../entities/log.entity";
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class LogService implements LoggerService {
-  constructor(private readonly dbService: LogDbService) {}
+  static connection: DataSource;
+  static Log: EntitySchema;
+
+  constructor(
+    private readonly MemoryDbService: MemoryDbService // @InjectRepository(Log) // private readonly userRepository: Repository<Log>
+  ) {}
+
+  async connectDb(options: LogModuleOptions): Promise<DataSource> {
+    const tableName =
+      options.database?.collection || options.database?.table || "logs";
+
+    LogService.Log = createLogEntity(tableName);
+
+    const dataSourceOptions = {
+      type: options.database?.type,
+      database: options.database?.database,
+      host: options.database?.host,
+      port: options.database?.port,
+      entities: [LogService.Log],
+    } as DataSourceOptions;
+
+    LogService.connection = new DataSource(dataSourceOptions);
+
+    await LogService.connection.initialize();
+
+    return LogService.connection;
+  }
 
   log(message: string, context?: string) {
     this.smartInsert(defaultTable, {
@@ -54,10 +82,20 @@ export class LogService implements LoggerService {
   }
 
   getAll(): any[] {
-    return this.dbService.getMany(defaultTable);
+    return this.MemoryDbService.getMany(defaultTable);
   }
 
-  private smartInsert(table: string, data: any): string {
-    return this.dbService.insert(table, data);
+  private async smartInsert(table: string, data: any): Promise<any> {
+    return await LogService.connection.manager.insert(LogService.Log, {
+      type: data.type,
+      message: data.message,
+      count: 1,
+    });
+    // return this.MemoryDbService.insert(table, {
+    //   ...data,
+    //   count: 1,
+    //   createdAt: new Date(),
+    //   updatedAt: new Date(),
+    // });
   }
 }

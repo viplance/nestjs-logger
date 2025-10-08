@@ -15,7 +15,19 @@
 3. If you want to catch all errors automatically, put the code in main.ts
     import { LogModule } from '@viplance/nestjs-logger';
 
-    await LogModule.connect(app); // it should be an async connection to NestFactory.create(AppModule)
+    await LogModule.connect(app, {
+        path: '/logs',
+        database: {
+            type: 'mongodb',
+            host: 'localhost',
+            port: 27017,
+            collection: 'logs'
+        }
+    });
+
+`path` and `database` options are optional
+The logs could be available at your_application_url/<path>
+By default the logs will be stored in memory and deleted when the application stops.
 
 Available service methods:
 - log()

@@ -1,5 +1,4 @@
-// DB layer
-
+// Memory DB layer
 import { Injectable } from "@nestjs/common";
 import { createHash, randomBytes } from "crypto";
 import { defaultTable } from "../defaults";
@@ -7,7 +6,7 @@ import { defaultTable } from "../defaults";
 const tables = [defaultTable];
 
 @Injectable()
-export class LogDbService {
+export class MemoryDbService {
   private db: { [key: string]: any[] } = {};
 
   constructor() {
@@ -18,15 +17,26 @@ export class LogDbService {
 
   public insert(table: string, data: any): string {
     // generate new random ID
-    const randomData = randomBytes(32).toString("hex");
+    const randomData = randomBytes(24).toString("hex");
     const id = createHash("sha256").update(randomData).digest("hex");
 
     this.db[table].push({
       ...data,
-      id, // creader unique index
+      id, // unique index
     });
 
-    console.log(this.db);
+    return id;
+  }
+
+  public update(table: string, condition: any, data: any): string {
+    // generate new random ID
+    const randomData = randomBytes(24).toString("hex");
+    const id = createHash("sha256").update(randomData).digest("hex");
+
+    this.db[table].push({
+      ...data,
+      id, // unique index
+    });
 
     return id;
   }
