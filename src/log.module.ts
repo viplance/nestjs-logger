@@ -25,7 +25,7 @@ export class LogModule {
     if (options?.path) {
       const httpAdapter = app.getHttpAdapter();
       httpAdapter.get(options.path, async (req: any, res: any) => {
-        res.json(logService.getAll());
+        res.json(await logService.getAll());
       });
     }
 

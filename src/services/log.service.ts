@@ -1,29 +1,27 @@
-import {
-  ExecutionContext,
-  Injectable,
-  LoggerService,
-  Scope,
-} from "@nestjs/common";
+import { Injectable, LoggerService, Scope } from "@nestjs/common";
 import { MemoryDbService } from "./memory-db.service";
 import { defaultTable } from "../defaults";
-import { LogModuleOptions, LogType } from "../types";
-import { DataSource, DataSourceOptions, EntitySchema } from "typeorm";
+import { Context, LogModuleOptions, LogType } from "../types";
+import {
+  DataSource,
+  DataSourceOptions,
+  EntityManager,
+  EntitySchema,
+} from "typeorm";
 import { createLogEntity } from "../entities/log.entity";
+import { ExecutionContextHost } from "@nestjs/core/helpers/execution-context-host";
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class LogService implements LoggerService {
   static connection: DataSource;
-  static Log: EntitySchema;
+  static Log: EntitySchema = createLogEntity(defaultTable);
 
-  constructor(
-    private readonly MemoryDbService: MemoryDbService // @InjectRepository(Log) // private readonly userRepository: Repository<Log>
-  ) {}
+  constructor(private readonly memoryDbService: MemoryDbService) {}
 
   async connectDb(options: LogModuleOptions): Promise<DataSource> {
-    const tableName =
-      options.database?.collection || options.database?.table || "logs";
-
-    LogService.Log = createLogEntity(tableName);
+    LogService.Log = createLogEntity(
+      options.database?.collection || options.database?.table || defaultTable
+    );
 
     const dataSourceOptions = {
       type: options.database?.type,
@@ -40,16 +38,16 @@ export class LogService implements LoggerService {
     return LogService.connection;
   }
 
-  log(message: string, context?: string) {
-    this.smartInsert(defaultTable, {
+  log(message: string, context?: ExecutionContextHost) {
+    this.smartInsert({
       type: LogType.LOG,
       message,
       context,
     });
   }
 
-  error(message: string, trace?: string, context?: ExecutionContext) {
-    this.smartInsert(defaultTable, {
+  error(message: string, trace?: string, context?: ExecutionContextHost) {
+    this.smartInsert({
       type: LogType.ERROR,
       message,
       trace,
@@ -57,45 +55,106 @@ export class LogService implements LoggerService {
     });
   }
 
-  warn(message: string, context?: string) {
-    this.smartInsert(defaultTable, {
+  warn(message: string, context?: ExecutionContextHost) {
+    this.smartInsert({
       type: LogType.WARN,
       message,
       context,
     });
   }
 
-  debug(message: string, context?: string) {
-    this.smartInsert(defaultTable, {
+  debug(message: string, context?: ExecutionContextHost) {
+    this.smartInsert({
       type: LogType.DEBUG,
       message,
       context,
     });
   }
 
-  verbose(message: string, context?: string) {
-    this.smartInsert(defaultTable, {
+  verbose(message: string, context?: ExecutionContextHost) {
+    this.smartInsert({
       type: LogType.VERBOSE,
       message,
       context,
     });
   }
 
-  getAll(): any[] {
-    return this.MemoryDbService.getMany(defaultTable);
+  async getAll(): Promise<any[]> {
+    return this.getConnection().find(LogService.Log, {
+      select: ["type", "message", "count", "createdAt", "updatedAt"],
+    });
   }
 
-  private async smartInsert(table: string, data: any): Promise<any> {
-    return await LogService.connection.manager.insert(LogService.Log, {
+  private async smartInsert(data: {
+    type: LogType;
+    message: string;
+    context?: ExecutionContextHost;
+    trace?: any;
+  }): Promise<any> {
+    const currentDate = new Date();
+
+    const connection = this.getConnection();
+
+    // find the same log in DB
+    const log = await connection.findOne(LogService.Log, {
+      where: {
+        type: data.type,
+        message: data.message,
+      },
+    });
+
+    const context = data.context ? this.parseContext(data.context) : undefined;
+
+    if (log) {
+      return await connection.update(LogService.Log, log._id, {
+        context,
+        trace: data.trace,
+        count: log.count + 1,
+        updatedAt: currentDate,
+      });
+    }
+
+    return await connection.insert(LogService.Log, {
       type: data.type,
       message: data.message,
+      context,
+      trace: data.trace,
       count: 1,
+      createdAt: currentDate,
+      updatedAt: currentDate,
     });
-    // return this.MemoryDbService.insert(table, {
-    //   ...data,
-    //   count: 1,
-    //   createdAt: new Date(),
-    //   updatedAt: new Date(),
-    // });
+  }
+
+  private getConnection(): EntityManager {
+    return LogService.connection.manager || this.memoryDbService;
+  }
+
+  private parseContext(context: ExecutionContextHost): Partial<Context> {
+    const res: Partial<Context> = {};
+    const args = context.getArgs();
+
+    for (const arg of args) {
+      if (arg.rawHeaders) {
+        res.rawHeaders = arg.rawHeaders;
+      }
+
+      if (arg.url) {
+        res.url = arg.url;
+      }
+
+      if (arg.method) {
+        res.method = arg.method;
+      }
+
+      if (arg.params) {
+        res.params = arg.params;
+      }
+
+      if (arg.body) {
+        res.body = arg.body;
+      }
+    }
+
+    return res;
   }
 }

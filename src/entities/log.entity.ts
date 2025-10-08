@@ -11,6 +11,11 @@ export function createLogEntity(name: string) {
       },
       type: { type: String },
       message: { type: String },
+      count: { type: Number, default: 1 },
+      context: { type: String, nullable: true },
+      trace: { type: String, nullable: true },
+      createdAt: { type: Date },
+      updatedAt: { type: Date },
     },
   });
 }
