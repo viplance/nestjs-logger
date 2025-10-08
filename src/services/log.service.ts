@@ -1,12 +1,7 @@
-import {
-  ExecutionContext,
-  Injectable,
-  LoggerService,
-  Scope,
-} from "@nestjs/common";
+import { Injectable, LoggerService, Scope } from "@nestjs/common";
 import { MemoryDbService } from "./memory-db.service";
 import { defaultTable } from "../defaults";
-import { LogModuleOptions, LogType } from "../types";
+import { Context, LogModuleOptions, LogType } from "../types";
 import {
   DataSource,
   DataSourceOptions,
@@ -14,6 +9,7 @@ import {
   EntitySchema,
 } from "typeorm";
 import { createLogEntity } from "../entities/log.entity";
+import { ExecutionContextHost } from "@nestjs/core/helpers/execution-context-host";
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class LogService implements LoggerService {
@@ -42,7 +38,7 @@ export class LogService implements LoggerService {
     return LogService.connection;
   }
 
-  log(message: string, context?: string) {
+  log(message: string, context?: ExecutionContextHost) {
     this.smartInsert({
       type: LogType.LOG,
       message,
@@ -50,7 +46,7 @@ export class LogService implements LoggerService {
     });
   }
 
-  error(message: string, trace?: string, context?: ExecutionContext) {
+  error(message: string, trace?: string, context?: ExecutionContextHost) {
     this.smartInsert({
       type: LogType.ERROR,
       message,
@@ -59,7 +55,7 @@ export class LogService implements LoggerService {
     });
   }
 
-  warn(message: string, context?: string) {
+  warn(message: string, context?: ExecutionContextHost) {
     this.smartInsert({
       type: LogType.WARN,
       message,
@@ -67,7 +63,7 @@ export class LogService implements LoggerService {
     });
   }
 
-  debug(message: string, context?: string) {
+  debug(message: string, context?: ExecutionContextHost) {
     this.smartInsert({
       type: LogType.DEBUG,
       message,
@@ -75,7 +71,7 @@ export class LogService implements LoggerService {
     });
   }
 
-  verbose(message: string, context?: string) {
+  verbose(message: string, context?: ExecutionContextHost) {
     this.smartInsert({
       type: LogType.VERBOSE,
       message,
@@ -84,10 +80,17 @@ export class LogService implements LoggerService {
   }
 
   async getAll(): Promise<any[]> {
-    return this.getConnection().find(LogService.Log);
+    return this.getConnection().find(LogService.Log, {
+      select: ["type", "message", "count", "createdAt", "updatedAt"],
+    });
   }
 
-  private async smartInsert(data: any): Promise<any> {
+  private async smartInsert(data: {
+    type: LogType;
+    message: string;
+    context?: ExecutionContextHost;
+    trace?: any;
+  }): Promise<any> {
     const currentDate = new Date();
 
     const connection = this.getConnection();
@@ -100,8 +103,12 @@ export class LogService implements LoggerService {
       },
     });
 
+    const context = data.context ? this.parseContext(data.context) : undefined;
+
     if (log) {
       return await connection.update(LogService.Log, log._id, {
+        context,
+        trace: data.trace,
         count: log.count + 1,
         updatedAt: currentDate,
       });
@@ -110,6 +117,8 @@ export class LogService implements LoggerService {
     return await connection.insert(LogService.Log, {
       type: data.type,
       message: data.message,
+      context,
+      trace: data.trace,
       count: 1,
       createdAt: currentDate,
       updatedAt: currentDate,
@@ -118,5 +127,34 @@ export class LogService implements LoggerService {
 
   private getConnection(): EntityManager {
     return LogService.connection.manager || this.memoryDbService;
+  }
+
+  private parseContext(context: ExecutionContextHost): Partial<Context> {
+    const res: Partial<Context> = {};
+    const args = context.getArgs();
+
+    for (const arg of args) {
+      if (arg.rawHeaders) {
+        res.rawHeaders = arg.rawHeaders;
+      }
+
+      if (arg.url) {
+        res.url = arg.url;
+      }
+
+      if (arg.method) {
+        res.method = arg.method;
+      }
+
+      if (arg.params) {
+        res.params = arg.params;
+      }
+
+      if (arg.body) {
+        res.body = arg.body;
+      }
+    }
+
+    return res;
   }
 }

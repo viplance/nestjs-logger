@@ -1,4 +1,4 @@
-import { EntitySchema } from "typeorm";
+import { Any, EntitySchema } from "typeorm";
 
 export function createLogEntity(name: string) {
   return new EntitySchema({
@@ -12,6 +12,8 @@ export function createLogEntity(name: string) {
       type: { type: String },
       message: { type: String },
       count: { type: Number, default: 1 },
+      context: { type: String, nullable: true },
+      trace: { type: String, nullable: true },
       createdAt: { type: Date },
       updatedAt: { type: Date },
     },

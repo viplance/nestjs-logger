@@ -2,7 +2,7 @@
 import { Injectable } from "@nestjs/common";
 import { createHash, randomBytes } from "crypto";
 import { defaultTable } from "../defaults";
-import { EntitySchema } from "typeorm";
+import { EntitySchema, FindManyOptions } from "typeorm";
 
 const tables = [defaultTable];
 
@@ -59,18 +59,29 @@ export class MemoryDbService {
     return Promise.reject();
   }
 
-  public async find(entity: EntitySchema): Promise<any[]> {
+  public async find(
+    entity: EntitySchema,
+    options?: {
+      select?: string[];
+    }
+  ): Promise<any[]> {
     const table = this.getTableName(entity);
 
-    return Promise.resolve(
-      this.db[table].map((log) => ({
-        type: log.type,
-        message: log.message,
-        count: log.count,
-        createdAt: log.createdAt,
-        updatedAt: log.updatedAt,
-      }))
-    );
+    let mapOptions = (obj: any) => obj;
+
+    if (options?.select) {
+      mapOptions = (obj: any) => {
+        const newObj: any = {};
+
+        for (const key of options.select || []) {
+          newObj[key] = obj[key];
+        }
+
+        return newObj;
+      };
+    }
+
+    return Promise.resolve(this.db[table].map(mapOptions));
   }
 
   public async getOneById(entity: EntitySchema, _id: string): Promise<any> {
