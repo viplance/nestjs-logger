@@ -1,4 +1,4 @@
-import { Any, EntitySchema } from "typeorm";
+import { EntitySchema } from "typeorm";
 
 export function createLogEntity(name: string) {
   return new EntitySchema({
