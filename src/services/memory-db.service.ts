@@ -2,6 +2,7 @@
 import { Injectable } from "@nestjs/common";
 import { createHash, randomBytes } from "crypto";
 import { defaultTable } from "../defaults";
+import { EntitySchema } from "typeorm";
 
 const tables = [defaultTable];
 
@@ -15,44 +16,125 @@ export class MemoryDbService {
     }
   }
 
-  public insert(table: string, data: any): string {
-    // generate new random ID
+  public insert(entity: EntitySchema, data: any): string {
+    const table = this.getTableName(entity);
+
+    // generate new random _id
     const randomData = randomBytes(24).toString("hex");
-    const id = createHash("sha256").update(randomData).digest("hex");
+    const _id = createHash("sha256").update(randomData).digest("hex");
 
     this.db[table].push({
       ...data,
-      id, // unique index
+      _id, // unique index
     });
 
-    return id;
+    return _id;
   }
 
-  public update(table: string, condition: any, data: any): string {
-    // generate new random ID
-    const randomData = randomBytes(24).toString("hex");
-    const id = createHash("sha256").update(randomData).digest("hex");
+  public async update(
+    entity: EntitySchema,
+    condition: any,
+    data: any
+  ): Promise<string> {
+    const table = this.getTableName(entity);
+    let index: number | null = null;
 
-    this.db[table].push({
-      ...data,
-      id, // unique index
-    });
+    if (typeof condition === "string") {
+      index = this.findIndex(entity, { where: { _id: condition } });
+    }
 
-    return id;
+    if (condition?.where) {
+      index = this.findIndex(entity, condition);
+    }
+
+    if (index !== null) {
+      this.db[table][index] = {
+        ...this.db[table][index],
+        ...data,
+      };
+
+      return Promise.resolve(this.db[table][index]._id);
+    }
+
+    return Promise.reject();
   }
 
-  public getMany(table: string): any[] {
-    return this.db[table].map((log) => ({
-      type: log.type,
-      message: log.message,
-    }));
+  public async find(entity: EntitySchema): Promise<any[]> {
+    const table = this.getTableName(entity);
+
+    return Promise.resolve(
+      this.db[table].map((log) => ({
+        type: log.type,
+        message: log.message,
+        count: log.count,
+        createdAt: log.createdAt,
+        updatedAt: log.updatedAt,
+      }))
+    );
   }
 
-  public getOneById(table: string, id: string): any {
-    return this.db[table].find((item) => item.id === id);
+  public async getOneById(entity: EntitySchema, _id: string): Promise<any> {
+    const table = this.getTableName(entity);
+
+    return Promise.resolve(this.db[table].find((item) => item._id === _id));
   }
 
-  public getManyByProperty(table: string, field: string, value: string): any[] {
+  public findByProperty(
+    entity: EntitySchema,
+    field: string,
+    value: string
+  ): any[] {
+    const table = this.getTableName(entity);
+
     return this.db[table].filter((item) => item[field] === value);
   }
+
+  public findOne(
+    entity: EntitySchema,
+    condition: { where: any }
+  ): Promise<any> {
+    const table = this.getTableName(entity);
+
+    return Promise.resolve(
+      this.db[table].find((item) => this.partialEqual(condition.where, item))
+    );
+  }
+
+  private findIndex(entity: EntitySchema, condition: { where: any }): number {
+    const table = this.getTableName(entity);
+
+    return this.db[table].findIndex((item) =>
+      this.partialEqual(condition.where, item)
+    );
+  }
+
+  private partialEqual(obj1: any, obj2: any) {
+    // compare primitive type values
+    if (obj1 === obj2) return true;
+
+    // handle null or non-object values
+    if (
+      obj1 == null ||
+      obj2 == null ||
+      typeof obj1 !== "object" ||
+      typeof obj2 !== "object"
+    ) {
+      return false;
+    }
+
+    // compare keys length
+    const keys1 = Object.keys(obj1);
+    const keys2 = Object.keys(obj2);
+
+    // compare values recursively
+    for (const key of keys1) {
+      if (!keys2.includes(key)) return false;
+
+      if (!this.partialEqual(obj1[key], obj2[key])) return false;
+    }
+
+    return true;
+  }
+
+  private getTableName = (entity: EntitySchema) => entity.options.name;
 }

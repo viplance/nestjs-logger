@@ -11,6 +11,9 @@ export function createLogEntity(name: string) {
       },
       type: { type: String },
       message: { type: String },
+      count: { type: Number, default: 1 },
+      createdAt: { type: Date },
+      updatedAt: { type: Date },
     },
   });
 }

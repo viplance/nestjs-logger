@@ -7,23 +7,25 @@ import {
 import { MemoryDbService } from "./memory-db.service";
 import { defaultTable } from "../defaults";
 import { LogModuleOptions, LogType } from "../types";
-import { DataSource, DataSourceOptions, EntitySchema } from "typeorm";
+import {
+  DataSource,
+  DataSourceOptions,
+  EntityManager,
+  EntitySchema,
+} from "typeorm";
 import { createLogEntity } from "../entities/log.entity";
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class LogService implements LoggerService {
   static connection: DataSource;
-  static Log: EntitySchema;
+  static Log: EntitySchema = createLogEntity(defaultTable);
 
-  constructor(
-    private readonly MemoryDbService: MemoryDbService // @InjectRepository(Log) // private readonly userRepository: Repository<Log>
-  ) {}
+  constructor(private readonly memoryDbService: MemoryDbService) {}
 
   async connectDb(options: LogModuleOptions): Promise<DataSource> {
-    const tableName =
-      options.database?.collection || options.database?.table || "logs";
-
-    LogService.Log = createLogEntity(tableName);
+    LogService.Log = createLogEntity(
+      options.database?.collection || options.database?.table || defaultTable
+    );
 
     const dataSourceOptions = {
       type: options.database?.type,
@@ -41,7 +43,7 @@ export class LogService implements LoggerService {
   }
 
   log(message: string, context?: string) {
-    this.smartInsert(defaultTable, {
+    this.smartInsert({
       type: LogType.LOG,
       message,
       context,
@@ -49,7 +51,7 @@ export class LogService implements LoggerService {
   }
 
   error(message: string, trace?: string, context?: ExecutionContext) {
-    this.smartInsert(defaultTable, {
+    this.smartInsert({
       type: LogType.ERROR,
       message,
       trace,
@@ -58,7 +60,7 @@ export class LogService implements LoggerService {
   }
 
   warn(message: string, context?: string) {
-    this.smartInsert(defaultTable, {
+    this.smartInsert({
       type: LogType.WARN,
       message,
       context,
@@ -66,7 +68,7 @@ export class LogService implements LoggerService {
   }
 
   debug(message: string, context?: string) {
-    this.smartInsert(defaultTable, {
+    this.smartInsert({
       type: LogType.DEBUG,
       message,
       context,
@@ -74,28 +76,47 @@ export class LogService implements LoggerService {
   }
 
   verbose(message: string, context?: string) {
-    this.smartInsert(defaultTable, {
+    this.smartInsert({
       type: LogType.VERBOSE,
       message,
       context,
     });
   }
 
-  getAll(): any[] {
-    return this.MemoryDbService.getMany(defaultTable);
+  async getAll(): Promise<any[]> {
+    return this.getConnection().find(LogService.Log);
   }
 
-  private async smartInsert(table: string, data: any): Promise<any> {
-    return await LogService.connection.manager.insert(LogService.Log, {
+  private async smartInsert(data: any): Promise<any> {
+    const currentDate = new Date();
+
+    const connection = this.getConnection();
+
+    // find the same log in DB
+    const log = await connection.findOne(LogService.Log, {
+      where: {
+        type: data.type,
+        message: data.message,
+      },
+    });
+
+    if (log) {
+      return await connection.update(LogService.Log, log._id, {
+        count: log.count + 1,
+        updatedAt: currentDate,
+      });
+    }
+
+    return await connection.insert(LogService.Log, {
       type: data.type,
       message: data.message,
       count: 1,
+      createdAt: currentDate,
+      updatedAt: currentDate,
     });
-    // return this.MemoryDbService.insert(table, {
-    //   ...data,
-    //   count: 1,
-    //   createdAt: new Date(),
-    //   updatedAt: new Date(),
-    // });
+  }
+
+  private getConnection(): EntityManager {
+    return LogService.connection.manager || this.memoryDbService;
   }
 }
