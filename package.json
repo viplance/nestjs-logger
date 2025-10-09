@@ -1,6 +1,6 @@
 {
   "name": "@viplance/nestjs-logger",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "description": "NestJS internal logging system",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,8 +8,17 @@
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "nestjs",
+    "nest",
+    "logger",
+    "logs",
+    "typeorm",
+    "mongodb",
+    "memory",
+    "free"
+  ],
+  "author": "Dzmitry Sharko",
   "license": "ISC",
   "peerDependencies": {
     "@nestjs/common": "^10.0.0",
