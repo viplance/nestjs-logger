@@ -10,11 +10,14 @@ import {
 } from "typeorm";
 import { createLogEntity } from "../entities/log.entity";
 import { ExecutionContextHost } from "@nestjs/core/helpers/execution-context-host";
+import { setInterval } from "timers";
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class LogService implements LoggerService {
   static connection: DataSource;
+  static options: LogModuleOptions;
   static Log: EntitySchema = createLogEntity(defaultTable);
+  static timer: ReturnType<typeof setInterval>;
 
   constructor(private readonly memoryDbService: MemoryDbService) {}
 
@@ -22,6 +25,8 @@ export class LogService implements LoggerService {
     LogService.Log = createLogEntity(
       options.database?.collection || options.database?.table || defaultTable
     );
+
+    LogService.options = options;
 
     const dataSourceOptions = {
       type: options.database?.type,
@@ -34,6 +39,12 @@ export class LogService implements LoggerService {
     LogService.connection = new DataSource(dataSourceOptions);
 
     await LogService.connection.initialize();
+
+    if (LogService.timer) {
+      clearInterval(LogService.timer);
+    }
+
+    LogService.timer = setInterval(this.checkRecords, 1000 * 60 * 60); // check one time per hour
 
     return LogService.connection;
   }
@@ -81,7 +92,15 @@ export class LogService implements LoggerService {
 
   async getAll(): Promise<any[]> {
     return this.getConnection().find(LogService.Log, {
-      select: ["type", "message", "count", "createdAt", "updatedAt"],
+      select: [
+        "type",
+        "message",
+        "count",
+        "createdAt",
+        "updatedAt",
+        "context",
+        "trace",
+      ],
     });
   }
 
@@ -156,5 +175,25 @@ export class LogService implements LoggerService {
     }
 
     return res;
+  }
+
+  private async checkRecords() {
+    if (LogService.options?.maxSize) {
+      const latest = await this.getConnection().find(LogService.Log, {
+        order: { updatedAt: "DESC" },
+        take: LogService.options?.maxSize,
+        select: ["_id"],
+      });
+
+      const latestIds = latest.map((item) => item.id);
+
+      await LogService.connection
+        .getRepository(LogService.Log)
+        .createQueryBuilder()
+        .delete()
+        .from(LogService.Log)
+        .where("_id NOT IN (:...ids)", { ids: latestIds })
+        .execute();
+    }
   }
 }
