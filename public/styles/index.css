@@ -177,6 +177,7 @@ nav ul li:hover {
 .header > :first-child,
 .row > :first-child {
   flex: 0 0 5rem;
+  text-align: center;
 }
 .header > :nth-child(2),
 .row > :nth-child(2) {

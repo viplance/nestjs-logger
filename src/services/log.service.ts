@@ -101,6 +101,7 @@ export class LogService implements LoggerService {
         "context",
         "trace",
       ],
+      order: { updatedAt: "DESC" },
     });
   }
 
@@ -145,7 +146,7 @@ export class LogService implements LoggerService {
   }
 
   private getConnection(): EntityManager {
-    return LogService.connection.manager || this.memoryDbService;
+    return LogService.connection?.manager || this.memoryDbService;
   }
 
   private parseContext(context: ExecutionContextHost): Partial<Context> {

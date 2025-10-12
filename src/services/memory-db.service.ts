@@ -81,7 +81,9 @@ export class MemoryDbService {
       };
     }
 
-    return Promise.resolve(this.db[table].map(mapOptions));
+    return Promise.resolve(
+      this.db[table].map(mapOptions).sort((a, b) => b.updatedAt - a.updatedAt)
+    );
   }
 
   public async getOneById(entity: EntitySchema, _id: string): Promise<any> {

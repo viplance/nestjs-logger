@@ -15,7 +15,7 @@ import { join } from "node:path";
   exports: [TypeOrmModule, LogService, MemoryDbService],
 })
 export class LogModule {
-  public static async connect(
+  public static async init(
     app: any,
     options?: LogModuleOptions
   ): Promise<void> {
@@ -44,7 +44,7 @@ export class LogModule {
       });
     }
 
-    if (options) {
+    if (options?.database) {
       await logService.connectDb(options);
     }
   }

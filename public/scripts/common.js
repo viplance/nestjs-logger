@@ -118,11 +118,9 @@ async function getLogs() {
   const res = await fetch(`${origin}${pathname}api${search}`);
 
   if (res.ok) {
-    const logs = (await res.json())
-      .filter((log) => {
-        return selectedLogTypes["all"] || selectedLogTypes[log.type];
-      })
-      .sort((a, b) => b.updatedAt - a.updatedAt);
+    const logs = (await res.json()).filter((log) => {
+      return selectedLogTypes["all"] || selectedLogTypes[log.type];
+    });
 
     let html = `<div class="header">
       <div class="col">Type</div>

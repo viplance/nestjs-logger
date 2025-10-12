@@ -18,22 +18,22 @@
     })
 ```
 
-3. Connect the module in main.ts<br />
+3. Init the module (typically in main.ts)<br />
 
 ```typescript
     import { LogModule } from '@viplance/nestjs-logger';
 
-    await LogModule.connect(app, {
+    await LogModule.init(app, {
         path: '/logs', // define the public URL for the log list
         key: 'kjhjmi321lqq7a', // use the key to protect data from unauthorized access
     });
 ```
 
-Use the database to store logs.
+Connect the database to store logs.
 
 ```typescript
-    await LogModule.connect(app, {
-        path: '/logs',
+    await LogModule.init(app, {
+        ...,
         database: {
             type: 'mongodb',
             host: 'localhost',
@@ -43,19 +43,24 @@ Use the database to store logs.
     });
 ```
 
+4. Use the `LogService` in case of custom logs to debug the application.<br />
+```typescript
+    import { LogService } from '@viplance/nestjs-logger';
+
+    constructor(private logService: LogService) {}
+
+    this.logService.log('Some log information');
+```
+
 <br />
 
 ### Additional information
 
-`path`, `key` and `database` properties are optional.
-<br />
-Use the `LogService` in case of custom logs to debug the application.
-<br />
-The logs could be available at `your_application_url`/`path`?key=`key`
-<br />
-By default the logs will be stored in memory and deleted when the application stops.<br />
-<br />
-Available service methods:
+- `path`, `key` and `database` properties are optional.
+- The logs could be available at `your_application_url`/`path`?key=`key`
+- The log API could be available at `your_application_url`/`path`/api?key=`key`
+-By default the logs will be stored in memory and deleted when the application stops.<br />
+The LogService methods:
 - log()
 - error()
 - warn()
