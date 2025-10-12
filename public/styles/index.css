@@ -181,9 +181,12 @@ nav ul li:hover {
 }
 .header > :nth-child(2),
 .row > :nth-child(2) {
+  flex: 0 0 20rem;
+}
+.header > :nth-child(3),
+.row > :nth-child(3) {
   flex: 1 1 auto;
 }
-
 div.header > :last-child,
 .row > :last-child {
   flex: 0 0 5rem;
@@ -200,6 +203,19 @@ div.header > :last-child,
 .col {
   padding: 1rem;
   box-sizing: border-box;
+}
+
+.context {
+  font-size: small;
+  color: var(--dark);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 2.65rem;
+  margin-top: -1rem;
 }
 
 .date {

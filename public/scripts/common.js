@@ -102,6 +102,14 @@ function getTypeClass(type) {
   return type;
 }
 
+function getContext(context) {
+  if (typeof context === `object`) {
+    return JSON.stringify(context);
+  }
+
+  return context || "";
+}
+
 function getLogHtmlElement(log) {
   return `<div id="${log._id}" class="row">
     <div class="col ${getTypeClass(log.type)}">${log.type}</div>
@@ -109,6 +117,7 @@ function getLogHtmlElement(log) {
       <div>${log.message}</div>
       <div class="date">${getDate(log.updatedAt)}</div>
     </div>
+    <div class="col context">${log.trace || ""}</div>
     <div class="col">${log.count}</div>
   </div>`;
 }
@@ -125,6 +134,7 @@ async function getLogs() {
     let html = `<div class="header">
       <div class="col">Type</div>
       <div class="col">Info</div>
+      <div class="col">Trace</div>
       <div class="col">Count</div>
     </div>`;
 
