@@ -1,0 +1,12 @@
+:root {
+  --teal: #128c7e;
+  --dark: #666;
+  --light: #ddd;
+  --blue: #34b7f1;
+  --white: #fff;
+  --log: var(--blue);
+  --error: red;
+  --warn: orange;
+  --debug: green;
+  --verbose: gray;
+}

@@ -5,11 +5,13 @@ import { LogInterceptor } from "./log.interceptor";
 import { LogModuleOptions } from "./types";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import querystring from "node:querystring";
+import { ApplicationConfig } from "@nestjs/core";
+import { join } from "node:path";
 
 @Global()
 @Module({
   imports: [TypeOrmModule],
-  providers: [LogService, MemoryDbService],
+  providers: [ApplicationConfig, LogService, MemoryDbService],
   exports: [TypeOrmModule, LogService, MemoryDbService],
 })
 export class LogModule {
@@ -24,8 +26,12 @@ export class LogModule {
     app.useGlobalInterceptors(new LogInterceptor(logService)); // intercept all errors
 
     if (options?.path) {
+      app.useStaticAssets(join(__dirname, "..", "public"), {
+        prefix: options.path,
+      });
+
       const httpAdapter = app.getHttpAdapter();
-      httpAdapter.get(options.path, async (req: any, res: any) => {
+      httpAdapter.get(join(options.path, "api"), async (req: any, res: any) => {
         if (LogService.options?.key) {
           const params = querystring.parse(req.url.split("?")[1]);
 

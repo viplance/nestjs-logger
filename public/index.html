@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NestJS logging system</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="styles/reset.css" />
+    <link rel="stylesheet" href="styles/colors.css" />
+    <link rel="stylesheet" href="styles/index.css" />
+    <script
+      defer="defer"
+      src="scripts/common.js
+    "
+    ></script>
+  </head>
+  <body>
+    <header>
+      <div class="content container">
+        <div class="logo">
+          <img src="favicon.ico" alt="Logger" />
+          <h2>NestJS logging system</h2>
+        </div>
+        <nav>
+          <ul>
+            <li class="all active" data-selector="all">All</a></li>
+            <li class="log" data-selector="log">Log</a></li>
+            <li class="error" data-selector="error">Error</li>
+            <li class="warn" data-selector="warn">Warning</li>
+            <li class="debug" data-selector="debug">Debug</li>
+            <li class="verbose" data-selector="verbose">Verbose</li>
+          </ul>
+        </nav>
+        <div onclick="getLogs()"><button class="white">Refresh</button></div>
+      </div>
+    </header>
+
+    <div class="container mt-3">
+      <section id="logs"></section>
+    </div>
+  </body>
+</html>
