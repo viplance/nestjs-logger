@@ -67,7 +67,7 @@ export class MemoryDbService {
   ): Promise<any[]> {
     const table = this.getTableName(entity);
 
-    let mapOptions = (obj: any) => obj;
+    let mapOptions = (obj: any) => obj; // return the object as is by default
 
     if (options?.select) {
       mapOptions = (obj: any) => {

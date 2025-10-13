@@ -9,15 +9,17 @@ const selectedLogTypes = {
 
 const logTypes = Object.keys(selectedLogTypes).filter((key) => key !== `all`);
 
+let logs = [];
+
 window.addEventListener("load", async () => {
   getLogs();
 });
 
 document.addEventListener(`click`, (e) => {
   const target = e.target;
-  const origin = target.closest(`li`);
+  const isLi = target.closest(`li`);
 
-  if (origin) {
+  if (isLi) {
     const selector = target.dataset.selector;
 
     if (selector === `all`) {
@@ -53,6 +55,21 @@ document.addEventListener(`click`, (e) => {
     unsetSelectorActive(document.querySelector(`li.all`));
 
     getLogs();
+
+    return;
+  }
+
+  const logId =
+    (target.parentNode?.classList.contains(`row`) && target.parentNode.id) ||
+    (target.parentNode?.parentNode?.classList.contains(`row`) &&
+      target.parentNode?.parentNode.id) ||
+    (target.parentNode?.parentNode?.parentNode?.classList.contains(`row`) &&
+      target.parentNode?.parentNode?.parentNode.id) ||
+    (target.classList.contains(`row`) && target.id);
+
+  if (logId) {
+    const log = logs.find((log) => log._id === logId);
+    showLogDetails(log);
   }
 });
 
@@ -102,24 +119,17 @@ function getTypeClass(type) {
   return type;
 }
 
-function getContext(context) {
-  if (typeof context === `object`) {
-    return JSON.stringify(context);
-  }
-
-  return context || "";
-}
-
 function getLogHtmlElement(log) {
-  return `<div id="${log._id}" class="row">
-    <div class="col ${getTypeClass(log.type)}">${log.type}</div>
-    <div class="col">
-      <div>${log.message}</div>
-      <div class="date">${getDate(log.updatedAt)}</div>
-    </div>
-    <div class="col context">${log.trace || ""}</div>
-    <div class="col">${log.count}</div>
-  </div>`;
+  return `
+    <div id="${log._id}" class="row">
+      <div class="col ${getTypeClass(log.type)}">${log.type}</div>
+      <div class="col">
+        <div>${log.message}</div>
+        <div class="date">${getDate(log.updatedAt)}</div>
+      </div>
+      <div class="col context">${log.trace || ""}</div>
+      <div class="col">${log.count}</div>
+    </div>`;
 }
 
 async function getLogs() {
@@ -127,7 +137,7 @@ async function getLogs() {
   const res = await fetch(`${origin}${pathname}api${search}`);
 
   if (res.ok) {
-    const logs = (await res.json()).filter((log) => {
+    logs = (await res.json()).filter((log) => {
       return selectedLogTypes["all"] || selectedLogTypes[log.type];
     });
 

@@ -93,6 +93,7 @@ export class LogService implements LoggerService {
   async getAll(): Promise<any[]> {
     return this.getConnection().find(LogService.Log, {
       select: [
+        "_id",
         "type",
         "message",
         "count",
