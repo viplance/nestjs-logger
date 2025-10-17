@@ -29,8 +29,7 @@
     });
 ```
 
-Connect the database to store logs.
-
+Connect the database to store logs.<br />
 ```typescript
     await LogModule.init(app, {
         ...,
@@ -51,7 +50,7 @@ Connect the database to store logs.
 
     this.logService.log('Some log information');
 ```
-
+<br />
 
 ### Additional information
 
@@ -59,7 +58,7 @@ Connect the database to store logs.
 - The logs could be available at `your_application_url`/`path`?key=`key`
 - The log API could be available at `your_application_url`/`path`/api?key=`key`
 - By default the logs will be stored in memory and deleted when the application stops.<br />
-
+<br />
 
 ### The LogService methods:
 - log()

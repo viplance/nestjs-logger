@@ -10,10 +10,6 @@ body {
   position: relative;
 }
 
-body:nth-child(2) {
-  margin-top: 4rem;
-}
-
 h1 {
   font-size: 2.5rem;
   font-weight: 400;
@@ -62,10 +58,17 @@ h3 {
   }
 }
 
-.shadow {
-  box-shadow: 0.5rem 0.5rem 1.5rem 0.2rem #ddd;
+#logs {
+  margin-top: 4rem;
 }
 
+#no-logs {
+  display: none;
+  margin-top: 6rem;
+  text-align: center;
+}
+
+/* buttons */
 button {
   display: flex;
   justify-content: space-between;
@@ -106,29 +109,39 @@ button.white {
 
 /* header */
 header {
-  padding-top: 1rem;
-  box-sizing: border-box;
   display: flex;
-  flex-direction: row;
-  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  flex-direction: column;
   position: fixed !important;
   top: 0;
   background: var(--white);
+  padding-top: 1rem;
   z-index: 1;
   width: 100%;
 }
 
-header .logo {
+.controls {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+}
+
+.controls .logo {
   display: flex;
   align-items: center;
   justify-items: left;
   opacity: 0.8;
 }
 
-header .logo img {
+.controls .logo img {
   height: 3rem;
   width: 3rem;
   margin-right: 1rem;
+}
+
+nav {
+  display: none;
 }
 
 nav ul {
@@ -169,40 +182,43 @@ nav ul li:hover {
 }
 
 /* table */
-.header,
+.table-header,
 .row {
   display: flex;
   gap: 1rem;
+  flex-direction: row;
   row-gap: 1rem;
   align-items: center;
   justify-content: space-around;
 }
 
-.header {
+.table-header {
+  display: none;
   height: 2rem;
   background-color: var(--dark);
   color: var(--white);
+  margin-top: 0.5rem;
 }
 
-.header .col,
+.table-header .col,
 .row > :last-child {
   text-align: center;
 }
-
-.header > :first-child,
+.table-header > :first-child,
 .row > :first-child {
   flex: 0 0 5rem;
   text-align: center;
 }
-.header > :nth-child(2),
+
+.table-header > :nth-child(2),
 .row > :nth-child(2) {
   flex: 0 0 20rem;
 }
-.header > :nth-child(3),
+.table-header > :nth-child(3),
 .row > :nth-child(3) {
   flex: 1 1 auto;
 }
-div.header > :last-child,
+.table-header > :last-child,
 .row > :last-child {
   flex: 0 0 5rem;
 }

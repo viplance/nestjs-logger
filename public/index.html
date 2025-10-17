@@ -26,24 +26,32 @@
   </head>
   <body>
     <header>
-      <div class="content container">
-        <div class="logo">
-          <img src="favicon.ico" alt="Logger" />
-          <h2>NestJS logging system</h2>
-        </div>
-        <nav>
-          <ul>
-            <li class="all active" data-selector="all">All</a></li>
-            <li class="log" data-selector="log">Log</a></li>
-            <li class="error" data-selector="error">Error</li>
-            <li class="warn" data-selector="warn">Warning</li>
-            <li class="debug" data-selector="debug">Debug</li>
-            <li class="verbose" data-selector="verbose">Verbose</li>
-          </ul>
-        </nav>
-        <div onclick="getLogs()"><button class="white">Refresh</button></div>
+      <div class="container controls content">
+          <div class="logo">
+            <img src="favicon.ico" alt="Logger" />
+            <h2>NestJS logging system</h2>
+          </div>
+          <nav>
+            <ul>
+              <li class="all active" data-selector="all">All</a></li>
+              <li class="log" data-selector="log">Log</a></li>
+              <li class="error" data-selector="error">Error</li>
+              <li class="warn" data-selector="warn">Warning</li>
+              <li class="debug" data-selector="debug">Debug</li>
+              <li class="verbose" data-selector="verbose">Verbose</li>
+            </ul>
+          </nav>
+          <div onclick="getLogs()"><button class="white">Refresh</button></div>
+      </div>
+      <div class="container table-header">
+        <div class="col">Type</div>
+        <div class="col">Info</div>
+        <div class="col">Trace</div>
+        <div class="col">Count</div>
       </div>
     </header>
+    
+    <div id="no-logs" class="content container center"><h3>No logs</h3></div>
 
     <div class="container mt-3">
       <section id="logs"></section>

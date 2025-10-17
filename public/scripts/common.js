@@ -141,12 +141,17 @@ async function getLogs() {
       return selectedLogTypes["all"] || selectedLogTypes[log.type];
     });
 
-    let html = `<div class="header">
-      <div class="col">Type</div>
-      <div class="col">Info</div>
-      <div class="col">Trace</div>
-      <div class="col">Count</div>
-    </div>`;
+    if (logs.length === 0) {
+      document.getElementById("no-logs").style.display = "block";
+      document.querySelector(".table-header").style.display = "none";
+      document.querySelector("nav").style.display = "none";
+    } else {
+      document.getElementById("no-logs").style.display = "none";
+      document.querySelector(".table-header").style.display = "flex";
+      document.querySelector("nav").style.display = "flex";
+    }
+
+    let html = "";
 
     logs.forEach((log) => {
       html += getLogHtmlElement(log);
