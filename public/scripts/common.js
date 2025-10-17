@@ -60,12 +60,12 @@ document.addEventListener(`click`, (e) => {
   }
 
   const logId =
-    (target.parentNode?.classList.contains(`row`) && target.parentNode.id) ||
-    (target.parentNode?.parentNode?.classList.contains(`row`) &&
-      target.parentNode?.parentNode.id) ||
-    (target.parentNode?.parentNode?.parentNode?.classList.contains(`row`) &&
-      target.parentNode?.parentNode?.parentNode.id) ||
-    (target.classList.contains(`row`) && target.id);
+    (target.parentNode?.classList.contains(`row`) && target.parentNode?.id) ||
+    (target.parentNode?.parentNode?.classList?.contains(`row`) &&
+      target.parentNode?.parentNode?.id) ||
+    (target.parentNode?.parentNode?.parentNode?.classList?.contains(`row`) &&
+      target.parentNode?.parentNode?.parentNode?.id) ||
+    (target.classList?.contains(`row`) && target.id);
 
   if (logId) {
     const log = logs.find((log) => log._id === logId);

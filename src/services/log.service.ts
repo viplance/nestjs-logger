@@ -156,7 +156,12 @@ export class LogService implements LoggerService {
 
     for (const arg of args) {
       if (arg.rawHeaders) {
-        res.rawHeaders = arg.rawHeaders;
+        res.rawHeaders = {};
+        const len = arg.rawHeaders.length - 1;
+
+        for (let i = 0; i < len; i += 2) {
+          res.rawHeaders[arg.rawHeaders[i]] = arg.rawHeaders[i + 1];
+        }
       }
 
       if (arg.url) {

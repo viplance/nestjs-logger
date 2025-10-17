@@ -26,6 +26,12 @@ h2 {
   line-height: 2.5rem;
 }
 
+h3 {
+  font-size: 1.3rem;
+  font-weight: 400;
+  line-height: 2rem;
+}
+
 .highlight {
   color: var(--teal);
 }
@@ -48,6 +54,12 @@ h2 {
 .container {
   width: 100%;
   max-width: 1600px;
+}
+
+@media (max-width: 1620px) {
+  .container {
+    padding: 0 2rem;
+  }
 }
 
 .shadow {
@@ -142,13 +154,18 @@ nav ul li:hover {
   text-decoration: underline;
 }
 
-/* margins */
+/* margins and paddings */
 .mt-2 {
   margin-top: 2rem;
 }
 
 .mt-3 {
   margin-top: 3rem;
+}
+
+.pl-2 {
+  box-sizing: border-box;
+  padding-left: 2rem;
 }
 
 /* table */
@@ -254,5 +271,8 @@ div.header > :last-child,
   left: 0;
   width: 100%;
   height: 100%;
+  overflow-y: scroll;
   z-index: 1;
 }
+
+/* JSON viewer */

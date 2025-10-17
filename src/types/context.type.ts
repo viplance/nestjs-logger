@@ -1,5 +1,5 @@
 export type Context = {
-  rawHeaders: any[];
+  rawHeaders: { [key: string]: string };
   url: string;
   method: string;
   params: any;
