@@ -1,6 +1,6 @@
 function showLogDetails(log) {
   const popup = document.getElementById(`popup`);
-  console.log(log.context);
+
   popup.innerHTML = `
     <div class="content center">
       <div class="container mt-2">
@@ -10,7 +10,7 @@ function showLogDetails(log) {
           log.trace
             ? `
             <h3 class="mt-2">Trace</h3>
-            <p class="pl-2">${log.trace}</p>
+            <p class="key pl-2"><span>${getTrace(log.trace)}</span></p>
             `
             : ""
         }
@@ -25,7 +25,12 @@ function showLogDetails(log) {
         <button class="white mt-2" onclick="closePopup()">Close</button>
       </div>
     <div>`;
+
   popup.style.display = "block";
+}
+
+function getTrace(trace) {
+  return trace.replace(new RegExp(String.fromCharCode(10), "g"), "<br />");
 }
 
 function closePopup() {

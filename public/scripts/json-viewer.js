@@ -15,7 +15,7 @@ function jsonViewer(json, parentKey) {
     if (typeof json[key] === "object") {
       res += jsonViewer(json[key], key);
     } else {
-      res += `<div class="pl-2">${key}: ${json[key]}</div>`;
+      res += `<div class="key pl-2">${key}: <span>${json[key]}</span></div>`;
     }
   }
 

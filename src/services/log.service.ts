@@ -155,21 +155,12 @@ export class LogService implements LoggerService {
     const args = context.getArgs();
 
     for (const arg of args) {
-      if (arg.rawHeaders) {
-        res.rawHeaders = {};
-        const len = arg.rawHeaders.length - 1;
-
-        for (let i = 0; i < len; i += 2) {
-          res.rawHeaders[arg.rawHeaders[i]] = arg.rawHeaders[i + 1];
-        }
+      if (arg.method) {
+        res.method = arg.method;
       }
 
       if (arg.url) {
         res.url = arg.url;
-      }
-
-      if (arg.method) {
-        res.method = arg.method;
       }
 
       if (arg.params) {
@@ -178,6 +169,15 @@ export class LogService implements LoggerService {
 
       if (arg.body) {
         res.body = arg.body;
+      }
+
+      if (arg.rawHeaders) {
+        res.rawHeaders = {};
+        const len = arg.rawHeaders.length - 1;
+
+        for (let i = 0; i < len; i += 2) {
+          res.rawHeaders[arg.rawHeaders[i]] = arg.rawHeaders[i + 1];
+        }
       }
     }
 

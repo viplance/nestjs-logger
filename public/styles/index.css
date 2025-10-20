@@ -52,12 +52,6 @@ h3 {
   max-width: 1600px;
 }
 
-@media (max-width: 1620px) {
-  .container {
-    padding: 0 2rem;
-  }
-}
-
 #logs {
   margin-top: 4rem;
 }
@@ -225,13 +219,14 @@ nav ul li:hover {
 
 .row {
   height: 3rem;
-  opacity: 0.8;
   font-weight: 100;
   cursor: pointer;
+  border-left: 2px solid transparent;
 }
 
 .row:hover {
-  opacity: 1;
+  border-left: 2px solid;
+  border-left-color: var(--dark);
 }
 
 .row:nth-child(odd) {
@@ -282,13 +277,32 @@ nav ul li:hover {
 #popup {
   position: fixed;
   display: none;
-  background-color: var(--white);
+  box-sizing: border-box;
+  padding: 2rem;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(5px);
+  border: 1px solid var(--light);
   top: 0;
-  left: 0;
-  width: 100%;
+  left: 30%;
+  width: 50%;
   height: 100%;
   overflow-y: scroll;
   z-index: 1;
+  opacity: 0.95;
 }
 
 /* JSON viewer */
+.key span {
+  color: var(--dark);
+}
+
+@media (max-width: 1620px) {
+  .container {
+    padding: 0 2rem;
+  }
+
+  #popup {
+    width: 100%;
+    left: 0;
+  }
+}
