@@ -5,11 +5,22 @@ function jsonViewer(json, parentKey) {
 
   res = `<div>`;
 
-  if (parentKey) {
-    res += `<div class="pl-2"><div>${parentKey}</div>`;
+  if (Array.isArray(json)) {
+    json.forEach((item) => {
+      res += `<div class="key pl-2">${
+        typeof item === "object" ? jsonViewer(item) : `<span>${item}</span>`
+      }</div>`;
+    });
+
+    return res;
   }
 
   const keys = Object.keys(json);
+  const showParentKey = parentKey && keys.length > 0; // hide an empty object
+
+  if (showParentKey) {
+    res += `<div class="pl-2"><div>${parentKey}</div>`;
+  }
 
   for (const key of keys) {
     if (typeof json[key] === "object") {
@@ -19,7 +30,7 @@ function jsonViewer(json, parentKey) {
     }
   }
 
-  if (parentKey) {
+  if (showParentKey) {
     res += `</div>`;
   }
 

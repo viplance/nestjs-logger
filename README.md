@@ -61,8 +61,9 @@ Connect the database to store logs.<br />
 <br />
 
 ### The LogService methods:
-- log()
-- error()
-- warn()
-- debug()
-- verbose()
+- log(message: string)
+- error(message: string)
+- warn(message: string)
+- debug(message: string)
+- verbose(message: string)
+- addBreadcrumb(any)

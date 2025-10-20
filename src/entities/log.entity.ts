@@ -14,6 +14,7 @@ export function createLogEntity(name: string) {
       count: { type: Number, default: 1 },
       context: { type: String, nullable: true },
       trace: { type: String, nullable: true },
+      breadcrumbs: { type: String, nullable: true },
       createdAt: { type: Date },
       updatedAt: { type: Date },
     },

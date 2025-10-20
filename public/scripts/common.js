@@ -124,7 +124,7 @@ function getLogHtmlElement(log) {
     <div id="${log._id}" class="row">
       <div class="col ${getTypeClass(log.type)}">${log.type}</div>
       <div class="col">
-        <div>${log.message}</div>
+        <div class="log-info">${log.message}</div>
         <div class="date">${getDate(log.updatedAt)}</div>
       </div>
       <div class="col context">${log.trace || ""}</div>
@@ -137,9 +137,7 @@ async function getLogs() {
   const res = await fetch(`${origin}${pathname}api${search}`);
 
   if (res.ok) {
-    logs = (await res.json()).filter((log) => {
-      return selectedLogTypes["all"] || selectedLogTypes[log.type];
-    });
+    logs = await res.json();
 
     if (logs.length === 0) {
       document.getElementById("no-logs").style.display = "block";
@@ -150,6 +148,10 @@ async function getLogs() {
       document.querySelector(".table-header").style.display = "flex";
       document.querySelector("nav").style.display = "flex";
     }
+
+    logs = logs.filter((log) => {
+      return selectedLogTypes["all"] || selectedLogTypes[log.type];
+    });
 
     let html = "";
 

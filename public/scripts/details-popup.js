@@ -3,22 +3,30 @@ function showLogDetails(log) {
 
   popup.innerHTML = `
     <div class="content center">
-      <div class="container mt-2">
-        <h2 class="${log.type}">${log.type}: ${log.message}</h2>
-        <span class="date">${getDate(log.updatedAt)}</span>
-        ${
-          log.trace
-            ? `
-            <h3 class="mt-2">Trace</h3>
-            <p class="key pl-2"><span>${getTrace(log.trace)}</span></p>
-            `
-            : ""
-        }
+      <div class="container">
+        <h2 class="popup-title ${log.type}">${log.type}: ${log.message}</h2>
+        <div class="mt-05">${getDate(log.updatedAt)}</div>
+          ${
+            log.trace
+              ? `
+              <h3 class="mt-2">Trace</h3>
+              <p class="key pl-2"><span>${getTrace(log.trace)}</span></p>
+              `
+              : ""
+          }
           ${
             log.context
               ? `
             <h3 class="mt-2">Context</h3>
             <p>${jsonViewer(log.context)}</p>
+            `
+              : ""
+          }
+          ${
+            log.breadcrumbs && log.breadcrumbs.length > 0
+              ? `
+            <h3 class="mt-2">Breadcrumbs</h3>
+            <p>${jsonViewer(log.breadcrumbs)}</p>
             `
               : ""
           }

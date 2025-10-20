@@ -12,11 +12,11 @@ export class LogInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap({
         error: (error) => {
-          // error handler
           this.logService?.error(error.message, error.stack, context);
+          this.logService?.clearBreadcrumbs();
         },
         complete: () => {
-          // normal request
+          this.logService?.clearBreadcrumbs();
         },
       })
     );

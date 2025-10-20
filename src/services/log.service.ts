@@ -19,6 +19,8 @@ export class LogService implements LoggerService {
   static Log: EntitySchema = createLogEntity(defaultTable);
   static timer: ReturnType<typeof setInterval>;
 
+  breadcrumbs: any[] = [];
+
   constructor(private readonly memoryDbService: MemoryDbService) {}
 
   async connectDb(options: LogModuleOptions): Promise<DataSource> {
@@ -47,6 +49,14 @@ export class LogService implements LoggerService {
     LogService.timer = setInterval(this.checkRecords, 1000 * 60 * 60); // check one time per hour
 
     return LogService.connection;
+  }
+
+  addBreadcrumb(breadcrumb: any) {
+    this.breadcrumbs.push(breadcrumb);
+  }
+
+  clearBreadcrumbs() {
+    this.breadcrumbs = [];
   }
 
   log(message: string, context?: ExecutionContextHost) {
@@ -101,6 +111,7 @@ export class LogService implements LoggerService {
         "updatedAt",
         "context",
         "trace",
+        "breadcrumbs",
       ],
       order: { updatedAt: "DESC" },
     });
@@ -130,6 +141,7 @@ export class LogService implements LoggerService {
       return await connection.update(LogService.Log, log._id, {
         context,
         trace: data.trace,
+        breadcrumbs: this.breadcrumbs,
         count: log.count + 1,
         updatedAt: currentDate,
       });
@@ -140,6 +152,7 @@ export class LogService implements LoggerService {
       message: data.message,
       context,
       trace: data.trace,
+      breadcrumbs: this.breadcrumbs,
       count: 1,
       createdAt: currentDate,
       updatedAt: currentDate,
