@@ -169,6 +169,9 @@ nav ul li:hover {
 .mt-1 {
   margin-top: 1rem;
 }
+.mt-15 {
+  margin-top: 1.5rem;
+}
 .mt-2 {
   margin-top: 2rem;
 }
@@ -178,6 +181,13 @@ nav ul li:hover {
 .pl-2 {
   box-sizing: border-box;
   padding-left: 2rem;
+}
+
+#search {
+  outline: none;
+  padding: 0.5rem;
+  border: 1px solid var(--light);
+  font-size: 1rem;
 }
 
 /* table */
@@ -190,10 +200,10 @@ nav ul li:hover {
   align-items: center;
   justify-content: space-around;
 }
-
 .table-header {
-  display: none;
+  display: flex;
   height: 2rem;
+  justify-content: space-between;
   background-color: var(--dark);
   color: var(--white);
   margin-top: 0.5rem;
@@ -208,12 +218,10 @@ nav ul li:hover {
   flex: 0 0 5rem;
   text-align: center;
 }
-
-.table-header > :nth-child(2),
 .row > :nth-child(2) {
   flex: 0 0 auto;
+  max-width: 35rem;
 }
-.table-header > :nth-child(3),
 .row > :nth-child(3) {
   flex: 1 1 auto;
 }

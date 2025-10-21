@@ -10,6 +10,7 @@ const selectedLogTypes = {
 const logTypes = Object.keys(selectedLogTypes).filter((key) => key !== `all`);
 
 let logs = [];
+let text = "";
 
 window.addEventListener("load", async () => {
   getLogs();
@@ -37,7 +38,7 @@ document.addEventListener(`click`, (e) => {
         });
       }
 
-      getLogs();
+      renderLogs();
 
       return;
     }
@@ -132,6 +133,31 @@ function getLogHtmlElement(log) {
     </div>`;
 }
 
+function renderLogs() {
+  let html = "";
+
+  logs
+    .filter((log) => {
+      return selectedLogTypes["all"] || selectedLogTypes[log.type];
+    })
+    .filter((log) => {
+      if (text === "") return true;
+
+      return (
+        log.message.toLowerCase().includes(text) ||
+        log.trace?.toLowerCase().includes(text) ||
+        JSON.stringify(log.context || {})
+          .toLowerCase()
+          .includes(text)
+      );
+    })
+    .forEach((log) => {
+      html += getLogHtmlElement(log);
+    });
+
+  document.getElementById("logs").innerHTML = html;
+}
+
 async function getLogs() {
   const { origin, pathname, search } = window.location;
   const res = await fetch(`${origin}${pathname}api${search}`);
@@ -149,16 +175,12 @@ async function getLogs() {
       document.querySelector("nav").style.display = "flex";
     }
 
-    logs = logs.filter((log) => {
-      return selectedLogTypes["all"] || selectedLogTypes[log.type];
-    });
-
-    let html = "";
-
-    logs.forEach((log) => {
-      html += getLogHtmlElement(log);
-    });
-
-    document.getElementById("logs").innerHTML = html;
+    renderLogs();
   }
+}
+
+function search(event) {
+  text = event.target.value.toLowerCase();
+
+  renderLogs();
 }

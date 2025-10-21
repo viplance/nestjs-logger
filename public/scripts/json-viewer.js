@@ -19,7 +19,7 @@ function jsonViewer(json, parentKey) {
   const showParentKey = parentKey && keys.length > 0; // hide an empty object
 
   if (showParentKey) {
-    res += `<div class="pl-2"><div>${parentKey}</div>`;
+    res += `<div class="pl-2"><div>&#9662; ${parentKey}</div>`;
   }
 
   for (const key of keys) {

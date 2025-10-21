@@ -9,7 +9,7 @@ function showLogDetails(log) {
           ${
             log.trace
               ? `
-              <h3 class="mt-2">Trace</h3>
+              <h3 class="mt-15">Trace</h3>
               <p class="key pl-2"><span>${getTrace(log.trace)}</span></p>
               `
               : ""
@@ -17,7 +17,7 @@ function showLogDetails(log) {
           ${
             log.context
               ? `
-            <h3 class="mt-2">Context</h3>
+            <h3 class="mt-15">Context</h3>
             <p>${jsonViewer(log.context)}</p>
             `
               : ""
@@ -25,7 +25,7 @@ function showLogDetails(log) {
           ${
             log.breadcrumbs && log.breadcrumbs.length > 0
               ? `
-            <h3 class="mt-2">Breadcrumbs</h3>
+            <h3 class="mt-15">Breadcrumbs</h3>
             <p>${jsonViewer(log.breadcrumbs)}</p>
             `
               : ""
