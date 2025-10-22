@@ -160,6 +160,7 @@ function renderLogs() {
 
 async function getLogs() {
   const { origin, pathname, search } = window.location;
+
   const res = await fetch(`${origin}${pathname}api${search}`);
 
   if (res.ok) {
@@ -176,6 +177,31 @@ async function getLogs() {
     }
 
     renderLogs();
+  } else {
+    alert("An error occurred while fetching logs.");
+  }
+}
+
+async function deleteLog(id) {
+  if (!confirm("Are you sure? It can't be undone.")) return;
+
+  const { origin, pathname, search: searchParams } = window.location;
+
+  const searchParamsWithId = new URLSearchParams(searchParams);
+  searchParamsWithId.set("id", id);
+
+  const res = await fetch(
+    `${origin}${pathname}api?${searchParamsWithId.toString()}`,
+    {
+      method: "DELETE",
+    }
+  );
+
+  if (res.ok) {
+    closePopup();
+    getLogs();
+  } else {
+    alert("An error occurred while deleting log.");
   }
 }
 

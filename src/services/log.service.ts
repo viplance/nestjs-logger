@@ -28,7 +28,7 @@ export class LogService implements LoggerService {
       options.database?.collection || options.database?.table || defaultTable
     );
 
-    LogService.options = options;
+    this.setOptions(options);
 
     const dataSourceOptions = {
       type: options.database?.type,
@@ -49,6 +49,10 @@ export class LogService implements LoggerService {
     LogService.timer = setInterval(this.checkRecords, 1000 * 60 * 60); // check one time per hour
 
     return LogService.connection;
+  }
+
+  setOptions(options: LogModuleOptions) {
+    LogService.options = options;
   }
 
   addBreadcrumb(breadcrumb: any) {
@@ -115,6 +119,10 @@ export class LogService implements LoggerService {
       ],
       order: { updatedAt: "DESC" },
     });
+  }
+
+  async delete(id: string) {
+    return this.getConnection().delete(LogService.Log, id);
   }
 
   private async smartInsert(data: {

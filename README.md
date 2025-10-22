@@ -66,4 +66,4 @@ Connect the database to store logs.<br />
 - warn(message: string)
 - debug(message: string)
 - verbose(message: string)
-- addBreadcrumb(any)
+- addBreadcrumb(breadcrumb: any)

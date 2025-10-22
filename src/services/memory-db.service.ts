@@ -92,6 +92,13 @@ export class MemoryDbService {
     return Promise.resolve(this.db[table].find((item) => item._id === _id));
   }
 
+  public async delete(entity: EntitySchema, _id: string): Promise<any> {
+    const table = this.getTableName(entity);
+    this.db[table] = this.db[table].filter((item) => item._id !== _id);
+
+    return Promise.resolve(_id);
+  }
+
   public findByProperty(
     entity: EntitySchema,
     field: string,

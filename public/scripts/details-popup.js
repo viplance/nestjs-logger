@@ -30,7 +30,12 @@ function showLogDetails(log) {
             `
               : ""
           }
-        <button class="white mt-2" onclick="closePopup()">Close</button>
+        <div class="content">
+          <button class="white mt-2" onclick="closePopup()">Close</button>
+          <button class="light mt-2" onclick="deleteLog('${
+            log._id
+          }')">Delete</button>
+        </div>
       </div>
     <div>`;
 
