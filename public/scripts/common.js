@@ -72,7 +72,7 @@ document.addEventListener(`click`, (e) => {
     let id = logId;
 
     try {
-      id = Number(id); // SQL DB numeric index
+      if (Number(id) > 0) id = Number(id); // SQL DB numeric index
     } catch (e) {}
 
     const log = logs.find((log) => log._id === id);
