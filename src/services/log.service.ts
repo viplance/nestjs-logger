@@ -11,12 +11,13 @@ import {
 import { createLogEntity } from "../entities/log.entity";
 import { ExecutionContextHost } from "@nestjs/core/helpers/execution-context-host";
 import { setInterval } from "timers";
+import { entity2table } from "../utils/entity2table";
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class LogService implements LoggerService {
   static connection: DataSource;
   static options: LogModuleOptions;
-  static Log: EntitySchema = createLogEntity(defaultTable);
+  static Log: EntitySchema = createLogEntity(defaultTable, "memory");
   static timer: ReturnType<typeof setInterval>;
 
   breadcrumbs: any[] = [];
@@ -25,7 +26,8 @@ export class LogService implements LoggerService {
 
   async connectDb(options: LogModuleOptions): Promise<DataSource> {
     LogService.Log = createLogEntity(
-      options.database?.collection || options.database?.table || defaultTable
+      options.database?.collection || options.database?.table || defaultTable,
+      options.database?.type || "mongodb"
     );
 
     this.setOptions(options);
@@ -39,8 +41,23 @@ export class LogService implements LoggerService {
     } as DataSourceOptions;
 
     LogService.connection = new DataSource(dataSourceOptions);
-
     await LogService.connection.initialize();
+
+    if (dataSourceOptions.type !== "mongodb") {
+      // LogService.idName = "id";
+
+      const queryRunner = LogService.connection.createQueryRunner();
+
+      try {
+        await queryRunner.connect();
+
+        const table = entity2table(LogService.Log);
+
+        await queryRunner.createTable(table, true);
+      } finally {
+        await queryRunner.release();
+      }
+    }
 
     if (LogService.timer) {
       clearInterval(LogService.timer);
@@ -146,7 +163,7 @@ export class LogService implements LoggerService {
     const context = data.context ? this.parseContext(data.context) : undefined;
 
     if (log) {
-      return await connection.update(LogService.Log, log._id, {
+      return await connection.update(LogService.Log, log["_id"], {
         context,
         trace: data.trace,
         breadcrumbs: this.breadcrumbs,

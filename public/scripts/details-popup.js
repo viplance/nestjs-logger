@@ -1,5 +1,7 @@
 function showLogDetails(log) {
   const popup = document.getElementById(`popup`);
+  const context = getObject(log.context);
+  const breadcrumbs = getObject(log.breadcrumbs);
 
   popup.innerHTML = `
     <div class="content center">
@@ -15,18 +17,18 @@ function showLogDetails(log) {
               : ""
           }
           ${
-            log.context
+            context
               ? `
             <h3 class="mt-15">Context</h3>
-            <p>${jsonViewer(log.context)}</p>
+            <p>${jsonViewer(context)}</p>
             `
               : ""
           }
           ${
-            log.breadcrumbs && log.breadcrumbs.length > 0
+            breadcrumbs && breadcrumbs.length > 0
               ? `
             <h3 class="mt-15">Breadcrumbs</h3>
-            <p>${jsonViewer(log.breadcrumbs)}</p>
+            <p>${jsonViewer(breadcrumbs)}</p>
             `
               : ""
           }
@@ -40,6 +42,14 @@ function showLogDetails(log) {
     <div>`;
 
   popup.style.display = "block";
+}
+
+function getObject(context) {
+  if (typeof context === "string") {
+    return JSON.parse(context);
+  }
+
+  return context;
 }
 
 function getTrace(trace) {

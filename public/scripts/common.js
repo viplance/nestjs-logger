@@ -69,7 +69,14 @@ document.addEventListener(`click`, (e) => {
     (target.classList?.contains(`row`) && target.id);
 
   if (logId) {
-    const log = logs.find((log) => log._id === logId);
+    let id = logId;
+
+    try {
+      id = Number(id); // SQL DB numeric index
+    } catch (e) {}
+
+    const log = logs.find((log) => log._id === id);
+
     showLogDetails(log);
   }
 });

@@ -1,6 +1,6 @@
 {
   "name": "@viplance/nestjs-logger",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "description": "NestJS internal logging system",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,8 +13,13 @@
     "nest",
     "logger",
     "logs",
+    "internal",
     "typeorm",
     "mongodb",
+    "postgresql",
+    "mysql",
+    "mariadb",
+    "sqlite",
     "memory",
     "free"
   ],
