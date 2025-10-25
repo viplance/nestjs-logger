@@ -12,6 +12,8 @@ const logTypes = Object.keys(selectedLogTypes).filter((key) => key !== `all`);
 let logs = [];
 let text = "";
 
+connectWebSocket();
+
 window.addEventListener("load", async () => {
   getLogs();
 });
@@ -175,10 +177,12 @@ async function getLogs() {
 
     if (logs.length === 0) {
       document.getElementById("no-logs").style.display = "block";
+      document.getElementById("search").style.display = "none";
       document.querySelector(".table-header").style.display = "none";
       document.querySelector("nav").style.display = "none";
     } else {
       document.getElementById("no-logs").style.display = "none";
+      document.getElementById("search").style.display = "inline-block";
       document.querySelector(".table-header").style.display = "flex";
       document.querySelector("nav").style.display = "flex";
     }

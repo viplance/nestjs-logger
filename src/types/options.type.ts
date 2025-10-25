@@ -12,4 +12,10 @@ export type LogModuleOptions = {
     table?: string;
     collection?: string;
   };
+  websocket?: {
+    port?: number;
+    namespace?: string;
+    host?: string;
+    secure?: boolean;
+  };
 };

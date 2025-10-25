@@ -3,11 +3,20 @@ function showLogDetails(log) {
   const context = getObject(log.context);
   const breadcrumbs = getObject(log.breadcrumbs);
 
+  const timeInfo =
+    log.updatedAt === log.createdAt
+      ? getDate(log.updatedAt)
+      : `Updated: ${getDate(log.updatedAt)}.&nbsp;&nbsp;&nbsp;First seen: ${getDate(
+          log.createdAt
+        )}`;
+
   popup.innerHTML = `
     <div class="content center">
       <div class="container">
-        <h2 class="popup-title ${log.type}">${log.type}: ${log.message}</h2>
-        <div class="mt-05">${getDate(log.updatedAt)}</div>
+        <h2 class="popup-title ${log.type}">${log.type}: ${log.message} (${
+    log.count
+  })</h2>
+        <div class="mt-05">${timeInfo}</div>
           ${
             log.trace
               ? `

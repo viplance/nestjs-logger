@@ -24,12 +24,13 @@
     import { LogModule } from '@viplance/nestjs-logger';
 
     await LogModule.init(app, {
+        ..., // some other properties
         path: '/logs', // define the public URL for the log list
         key: 'kjhjmi321lqq7a', // use the key to protect data from unauthorized access
     });
 ```
 
-Connect the database to store logs.<br />
+Connect a SQL or NoSQL database to store logs.<br />
 ```typescript
     await LogModule.init(app, {
         ...,
@@ -38,6 +39,18 @@ Connect the database to store logs.<br />
             host: 'localhost',
             port: 27017,
             collection: 'logs',
+        }
+    });
+```
+
+Enable a WebSocket connection to receive the logs in real time.<br />
+```typescript
+    await LogModule.init(app, {
+        ...,
+        websocket: {
+            secure: true, // enable WSS
+            port: 81,
+            host: 'your-domain.name',
         }
     });
 ```

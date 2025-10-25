@@ -8,12 +8,19 @@ import querystring from "node:querystring";
 import { ApplicationConfig } from "@nestjs/core";
 import { join } from "node:path";
 import { LogAccessGuard } from "./guards/access.guard";
+import { WsService } from "./services/ws.service";
 
 @Global()
 @Module({
   imports: [TypeOrmModule],
-  providers: [ApplicationConfig, LogAccessGuard, LogService, MemoryDbService],
-  exports: [TypeOrmModule, LogService, MemoryDbService],
+  providers: [
+    ApplicationConfig,
+    LogAccessGuard,
+    LogService,
+    MemoryDbService,
+    WsService,
+  ],
+  exports: [TypeOrmModule, LogService, MemoryDbService, WsService],
 })
 export class LogModule {
   public static async init(
@@ -23,6 +30,7 @@ export class LogModule {
     app.resolve(LogService);
 
     const logService: LogService = await app.resolve(LogService);
+    const wsService: WsService = await app.resolve(WsService);
     const logAccessGuard: LogAccessGuard = await app.get(LogAccessGuard);
 
     if (options) {
@@ -37,6 +45,26 @@ export class LogModule {
       });
 
       const httpAdapter = app.getHttpAdapter();
+
+      // frontend settings endpoint
+      httpAdapter.get(
+        join(options.path, "settings"),
+        async (req: any, res: any) => {
+          logAccessGuard.canActivate(req);
+
+          const result: { [key: string]: any } = {};
+
+          if (options?.websocket) {
+            result.websocket = {
+              namespace: options.websocket?.namespace,
+              port: options.websocket?.port,
+              host: options.websocket?.host || req.headers?.host.split(":")[0],
+            };
+          }
+
+          res.json(result);
+        }
+      );
 
       // get all logs endpoint
       httpAdapter.get(join(options.path, "api"), async (req: any, res: any) => {
@@ -60,6 +88,11 @@ export class LogModule {
           res.json(await logService.delete(params.id.toString()));
         }
       );
+
+      // set up WebSocket connection
+      if (options?.websocket) {
+        wsService.setupConnection(options.websocket);
+      }
     }
 
     if (options?.database) {

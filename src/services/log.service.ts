@@ -12,6 +12,7 @@ import { createLogEntity } from "../entities/log.entity";
 import { ExecutionContextHost } from "@nestjs/core/helpers/execution-context-host";
 import { setInterval } from "timers";
 import { entity2table } from "../utils/entity2table";
+import { WsService } from "./ws.service";
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class LogService implements LoggerService {
@@ -22,7 +23,10 @@ export class LogService implements LoggerService {
 
   breadcrumbs: any[] = [];
 
-  constructor(private readonly memoryDbService: MemoryDbService) {}
+  constructor(
+    private readonly memoryDbService: MemoryDbService,
+    private readonly wsService: WsService
+  ) {}
 
   async connectDb(options: LogModuleOptions): Promise<DataSource> {
     LogService.Log = createLogEntity(
@@ -44,8 +48,6 @@ export class LogService implements LoggerService {
     await LogService.connection.initialize();
 
     if (dataSourceOptions.type !== "mongodb") {
-      // LogService.idName = "id";
-
       const queryRunner = LogService.connection.createQueryRunner();
 
       try {
@@ -138,8 +140,12 @@ export class LogService implements LoggerService {
     });
   }
 
-  async delete(id: string) {
-    return this.getConnection().delete(LogService.Log, id);
+  async delete(_id: string) {
+    this.wsService.sendMessage({
+      action: "delete",
+      data: { _id },
+    });
+    return this.getConnection().delete(LogService.Log, _id);
   }
 
   private async smartInsert(data: {
@@ -163,16 +169,31 @@ export class LogService implements LoggerService {
     const context = data.context ? this.parseContext(data.context) : undefined;
 
     if (log) {
-      return await connection.update(LogService.Log, log["_id"], {
+      const updatedLog = {
+        context,
+        trace: data.trace,
+        breadcrumbs: this.breadcrumbs,
+        count: log.count + 1,
+        updatedAt: currentDate,
+      };
+
+      this.wsService.sendMessage({
+        action: "update",
+        data: { ...log, ...updatedLog },
+      });
+
+      await connection.update(LogService.Log, log["_id"], {
         context,
         trace: data.trace,
         breadcrumbs: this.breadcrumbs,
         count: log.count + 1,
         updatedAt: currentDate,
       });
+
+      return { ...log, ...updatedLog };
     }
 
-    return await connection.insert(LogService.Log, {
+    const insertedLog = {
       type: data.type,
       message: data.message,
       context,
@@ -181,7 +202,27 @@ export class LogService implements LoggerService {
       count: 1,
       createdAt: currentDate,
       updatedAt: currentDate,
+    };
+
+    const res = await connection.insert(LogService.Log, insertedLog);
+    const _id = this.getNewObjectId(res);
+
+    this.wsService.sendMessage({
+      action: "insert",
+      data: { _id, ...insertedLog },
     });
+
+    return { _id, ...insertedLog };
+  }
+
+  private getNewObjectId(result: any): string | number {
+    if (result.identifiers) {
+      return result.identifiers[0]._id;
+    }
+
+    console.log(result);
+
+    return result._id;
   }
 
   private getConnection(): EntityManager {
