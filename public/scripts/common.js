@@ -14,10 +14,6 @@ let text = "";
 
 connectWebSocket();
 
-window.addEventListener("load", async () => {
-  getLogs();
-});
-
 document.addEventListener(`click`, (e) => {
   const target = e.target;
   const isLi = target.closest(`li`);
@@ -142,10 +138,10 @@ function getLogHtmlElement(log) {
     </div>`;
 }
 
-function renderLogs() {
+function renderLogs(logList = logs) {
   let html = "";
 
-  logs
+  logList
     .filter((log) => {
       return selectedLogTypes["all"] || selectedLogTypes[log.type];
     })
@@ -167,29 +163,44 @@ function renderLogs() {
   document.getElementById("logs").innerHTML = html;
 }
 
+async function checkElementsVisibility(logList = logs) {
+  if (logList.length === 0) {
+    document.getElementById("no-logs").style.display = "block";
+    document.getElementById("search").style.display = "none";
+    document.querySelector(".table-header").style.display = "none";
+    document.querySelector("nav").style.display = "none";
+  } else {
+    document.getElementById("no-logs").style.display = "none";
+    document.getElementById("search").style.display = "inline-block";
+    document.querySelector(".table-header").style.display = "flex";
+    document.querySelector("nav").style.display = "flex";
+  }
+}
+
 async function getLogs() {
   const { origin, pathname, search } = window.location;
+  const searchParams = new URLSearchParams(search);
+  const key = searchParams.get("key");
 
-  const res = await fetch(`${origin}${pathname}api${search}`);
-
-  if (res.ok) {
-    logs = await res.json();
-
-    if (logs.length === 0) {
-      document.getElementById("no-logs").style.display = "block";
-      document.getElementById("search").style.display = "none";
-      document.querySelector(".table-header").style.display = "none";
-      document.querySelector("nav").style.display = "none";
-    } else {
-      document.getElementById("no-logs").style.display = "none";
-      document.getElementById("search").style.display = "inline-block";
-      document.querySelector(".table-header").style.display = "flex";
-      document.querySelector("nav").style.display = "flex";
-    }
-
-    renderLogs();
+  if (!!socket) {
+    socket.send(
+      JSON.stringify({
+        action: "getLogs",
+        key,
+      })
+    );
   } else {
-    alert("An error occurred while fetching logs.");
+    const res = await fetch(`${origin}${pathname}api${search}`);
+
+    if (res.ok) {
+      logs = await res.json();
+
+      checkElementsVisibility();
+
+      renderLogs();
+    } else {
+      alert("An error occurred while fetching logs.");
+    }
   }
 }
 
@@ -199,20 +210,34 @@ async function deleteLog(id) {
   const { origin, pathname, search: searchParams } = window.location;
 
   const searchParamsWithId = new URLSearchParams(searchParams);
-  searchParamsWithId.set("id", id);
+  const key = searchParamsWithId.get("key");
 
-  const res = await fetch(
-    `${origin}${pathname}api?${searchParamsWithId.toString()}`,
-    {
-      method: "DELETE",
-    }
-  );
-
-  if (res.ok) {
+  if (!!socket) {
+    socket.send(
+      JSON.stringify({
+        action: "delete",
+        key,
+        id,
+      })
+    );
     closePopup();
     getLogs();
   } else {
-    alert("An error occurred while deleting log.");
+    searchParamsWithId.set("id", id);
+
+    const res = await fetch(
+      `${origin}${pathname}api?${searchParamsWithId.toString()}`,
+      {
+        method: "DELETE",
+      }
+    );
+
+    if (res.ok) {
+      closePopup();
+      getLogs();
+    } else {
+      alert("An error occurred while deleting log.");
+    }
   }
 }
 

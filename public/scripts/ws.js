@@ -1,5 +1,4 @@
 // WebSocket connection
-const key = "123";
 let socket;
 
 async function connectWebSocket() {
@@ -14,6 +13,10 @@ async function connectWebSocket() {
 
   const settings = await res.json();
 
+  if (!settings.websocket) {
+    getLogs();
+  }
+
   if (!settings.websocket?.port) {
     alert("WebSocket port is not configured.");
     return;
@@ -27,7 +30,7 @@ async function connectWebSocket() {
   };
 
   socket.onopen = (event) => {
-    socket.send(JSON.stringify({ action: "getLogs", key }));
+    getLogs();
   };
 
   socket.onclose = (event) => {
@@ -40,6 +43,11 @@ async function connectWebSocket() {
 
     if (data["action"]) {
       switch (data["action"]) {
+        case "list":
+          const logs = data["data"];
+          checkElementsVisibility(logs);
+          renderLogs(logs);
+          break;
         case "insert":
           getLogs();
           break;
@@ -52,3 +60,7 @@ async function connectWebSocket() {
     }
   };
 }
+
+sendMessage = (message) => {
+  socket.send(JSON.stringify(message));
+};

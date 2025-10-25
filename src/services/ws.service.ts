@@ -1,9 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import WebSocket, { WebSocketServer } from "ws";
 import { LogModuleOptions } from "../types";
+import { Subject } from "rxjs";
 
 @Injectable()
 export class WsService {
+  public onMessage: Subject<any> = new Subject();
   private ws: WebSocket | null = null;
   private connected: boolean = false;
   private connectionTimeout: number = 500;
@@ -23,7 +25,7 @@ export class WsService {
       return;
     }
 
-    const ws = new WebSocketServer({
+    const wsServer = new WebSocketServer({
       retryCount: 1,
       reconnectInterval: 1,
       handshakeTimeout: this.connectionTimeout,
@@ -34,13 +36,14 @@ export class WsService {
       `Logs WebSocket server is listening on port ${this.options.port}`
     );
 
-    ws.on("error", this.handleError);
-    ws.on("open", () => this.handleOpenConnection());
-    ws.on("ping", () => this.ping(this.ws));
-    ws.on("close", () => this.closeConnection(this.ws));
-    ws.on("message", this.handleMessage);
-    ws.on("connection", (connection: WebSocket) => {
+    wsServer.on("error", this.handleError);
+    wsServer.on("open", () => this.handleOpenConnection());
+    wsServer.on("ping", () => this.ping(this.ws));
+    wsServer.on("close", () => this.closeConnection(this.ws));
+    wsServer.on("message", this.handleMessage);
+    wsServer.on("connection", (connection: WebSocket) => {
       this.ws = connection;
+      connection.onmessage = this.handleMessage;
     });
   }
 
@@ -48,14 +51,14 @@ export class WsService {
     this.ws?.send(JSON.stringify(message));
   }
 
-  handleError = () => {
+  private handleError = () => {
     const serverUrl = this.getServerUrl();
     console.error(`Server ${serverUrl} is not available.`);
 
     setTimeout(this.setupConnection, this.connectionTimeout);
   };
 
-  closeConnection = (connection: any) => {
+  private closeConnection = (connection: any) => {
     clearTimeout(connection.pingTimeout);
 
     if (this.connected) {
@@ -76,12 +79,12 @@ export class WsService {
 
   private handleMessage = (message: any) => {
     try {
-      const data = JSON.parse(message.toString());
-      console.log("Received the message: %s", data);
+      const data = JSON.parse((message.data || message).toString());
 
       if (data.action) {
         switch (data.action) {
-          case "toggleRelay":
+          case "getLogs":
+            this.onMessage.next(data);
             break;
         }
       }

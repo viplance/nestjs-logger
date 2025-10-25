@@ -1,4 +1,9 @@
-import { Injectable, LoggerService, Scope } from "@nestjs/common";
+import {
+  Injectable,
+  LoggerService,
+  OnApplicationShutdown,
+  Scope,
+} from "@nestjs/common";
 import { MemoryDbService } from "./memory-db.service";
 import { defaultTable } from "../defaults";
 import { Context, LogModuleOptions, LogType } from "../types";
@@ -15,7 +20,7 @@ import { entity2table } from "../utils/entity2table";
 import { WsService } from "./ws.service";
 
 @Injectable({ scope: Scope.TRANSIENT })
-export class LogService implements LoggerService {
+export class LogService implements LoggerService, OnApplicationShutdown {
   static connection: DataSource;
   static options: LogModuleOptions;
   static Log: EntitySchema = createLogEntity(defaultTable, "memory");
@@ -26,7 +31,27 @@ export class LogService implements LoggerService {
   constructor(
     private readonly memoryDbService: MemoryDbService,
     private readonly wsService: WsService
-  ) {}
+  ) {
+    wsService.onMessage.subscribe(async (message) => {
+      switch (message.action) {
+        case "getLogs":
+          this.wsService.sendMessage({
+            action: "list",
+            data: await this.getAll(),
+          });
+          break;
+        case "delete":
+          this.delete(message.data._id);
+          break;
+      }
+    });
+  }
+
+  onApplicationShutdown() {
+    if (LogService.timer) {
+      clearInterval(LogService.timer);
+    }
+  }
 
   async connectDb(options: LogModuleOptions): Promise<DataSource> {
     LogService.Log = createLogEntity(
