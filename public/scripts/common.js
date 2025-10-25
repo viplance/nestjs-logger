@@ -204,7 +204,7 @@ async function getLogs() {
   }
 }
 
-async function deleteLog(id) {
+async function deleteLog(_id) {
   if (!confirm("Are you sure? It can't be undone.")) return;
 
   const { origin, pathname, search: searchParams } = window.location;
@@ -217,13 +217,15 @@ async function deleteLog(id) {
       JSON.stringify({
         action: "delete",
         key,
-        id,
+        data: {
+          _id,
+        },
       })
     );
     closePopup();
     getLogs();
   } else {
-    searchParamsWithId.set("id", id);
+    searchParamsWithId.set("id", _id);
 
     const res = await fetch(
       `${origin}${pathname}api?${searchParamsWithId.toString()}`,

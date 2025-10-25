@@ -13,12 +13,14 @@ export class WsService {
     port: 8080,
     host: "localhost",
   };
+  private key: string = "";
 
-  setupConnection(options: LogModuleOptions["websocket"]) {
+  setupConnection(options: LogModuleOptions["websocket"], key = "") {
     this.options = {
       ...this.options,
       ...options,
     };
+    this.key = key;
 
     // Set up Web Socket server
     if (this.ws) {
@@ -81,13 +83,14 @@ export class WsService {
     try {
       const data = JSON.parse((message.data || message).toString());
 
-      if (data.action) {
-        switch (data.action) {
-          case "getLogs":
-            this.onMessage.next(data);
-            break;
-        }
+      if (this.key !== "" && data.key !== this.key) {
+        throw new Error("WebSocket unauthorized");
       }
+
+      if (this.options)
+        if (data.action) {
+          this.onMessage.next(data);
+        }
     } catch (err) {
       console.error(err);
     }

@@ -18,6 +18,7 @@ import { ExecutionContextHost } from "@nestjs/core/helpers/execution-context-hos
 import { setInterval } from "timers";
 import { entity2table } from "../utils/entity2table";
 import { WsService } from "./ws.service";
+import { Subscription } from "rxjs";
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class LogService implements LoggerService, OnApplicationShutdown {
@@ -25,27 +26,14 @@ export class LogService implements LoggerService, OnApplicationShutdown {
   static options: LogModuleOptions;
   static Log: EntitySchema = createLogEntity(defaultTable, "memory");
   static timer: ReturnType<typeof setInterval>;
+  static subscription: Subscription;
 
   breadcrumbs: any[] = [];
 
   constructor(
     private readonly memoryDbService: MemoryDbService,
     private readonly wsService: WsService
-  ) {
-    wsService.onMessage.subscribe(async (message) => {
-      switch (message.action) {
-        case "getLogs":
-          this.wsService.sendMessage({
-            action: "list",
-            data: await this.getAll(),
-          });
-          break;
-        case "delete":
-          this.delete(message.data._id);
-          break;
-      }
-    });
-  }
+  ) {}
 
   onApplicationShutdown() {
     if (LogService.timer) {
@@ -59,7 +47,9 @@ export class LogService implements LoggerService, OnApplicationShutdown {
       options.database?.type || "mongodb"
     );
 
-    this.setOptions(options);
+    if (!LogService.options) {
+      this.setOptions(options);
+    }
 
     const dataSourceOptions = {
       type: options.database?.type,
@@ -97,6 +87,26 @@ export class LogService implements LoggerService, OnApplicationShutdown {
 
   setOptions(options: LogModuleOptions) {
     LogService.options = options;
+
+    if (options.websocket && !LogService.subscription) {
+      LogService.subscription = this.wsService.onMessage.subscribe(
+        async (message) => {
+          console.log("message", message);
+          switch (message.action) {
+            case "getLogs":
+              this.wsService.sendMessage({
+                action: "list",
+                data: await this.getAll(),
+              });
+              break;
+            case "delete":
+              console.log("DELETE", message);
+              this.delete(message.data._id);
+              break;
+          }
+        }
+      );
+    }
   }
 
   addBreadcrumb(breadcrumb: any) {

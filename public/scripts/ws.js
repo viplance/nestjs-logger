@@ -44,7 +44,7 @@ async function connectWebSocket() {
     if (data["action"]) {
       switch (data["action"]) {
         case "list":
-          const logs = data["data"];
+          logs = data["data"];
           checkElementsVisibility(logs);
           renderLogs(logs);
           break;

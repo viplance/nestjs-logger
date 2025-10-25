@@ -91,7 +91,7 @@ export class LogModule {
 
       // set up WebSocket connection
       if (options?.websocket) {
-        wsService.setupConnection(options.websocket);
+        wsService.setupConnection(options.websocket, options.key);
       }
     }
 
