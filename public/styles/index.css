@@ -190,6 +190,11 @@ nav ul li:hover {
   font-size: 1rem;
 }
 
+#refresh,
+#freeze {
+  display: none;
+}
+
 /* table */
 .table-header,
 .row {

@@ -91,7 +91,6 @@ export class LogService implements LoggerService, OnApplicationShutdown {
     if (options.websocket && !LogService.subscription) {
       LogService.subscription = this.wsService.onMessage.subscribe(
         async (message) => {
-          console.log("message", message);
           switch (message.action) {
             case "getLogs":
               this.wsService.sendMessage({
@@ -100,7 +99,6 @@ export class LogService implements LoggerService, OnApplicationShutdown {
               });
               break;
             case "delete":
-              console.log("DELETE", message);
               this.delete(message.data._id);
               break;
           }

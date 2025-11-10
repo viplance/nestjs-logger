@@ -1,5 +1,6 @@
 // WebSocket connection
 let socket;
+let frozen = false;
 
 async function connectWebSocket() {
   const { hostname, origin, pathname, search } = window.location;
@@ -7,7 +8,7 @@ async function connectWebSocket() {
   const res = await fetch(`${origin}${pathname}settings${search}`);
 
   if (!res.ok) {
-    alert("An error occurred while fetching settings.");
+    alert('An error occurred while fetching settings.');
     return;
   }
 
@@ -15,15 +16,18 @@ async function connectWebSocket() {
 
   if (!settings.websocket) {
     getLogs();
+    document.getElementById('refresh').style.display = 'block';
   }
 
+  document.getElementById('freeze').style.display = 'block';
+
   if (!settings.websocket?.port) {
-    alert("WebSocket port is not configured.");
+    alert('WebSocket port is not configured.');
     return;
   }
 
   const socketUrl = `ws://${hostname}:${settings.websocket.port}`;
-  socket = new WebSocket(socketUrl, "json");
+  socket = new WebSocket(socketUrl, 'json');
 
   socket.onerror = (error) => {
     console.error(error);
@@ -41,26 +45,39 @@ async function connectWebSocket() {
   socket.onmessage = (event) => {
     const data = JSON.parse(event.data.toString());
 
-    if (data["action"]) {
-      switch (data["action"]) {
-        case "list":
-          logs = data["data"];
+    if (data['action'] && !frozen) {
+      switch (data['action']) {
+        case 'list':
+          logs = data['data'];
           checkElementsVisibility(logs);
           renderLogs(logs);
           break;
-        case "insert":
+        case 'insert':
           getLogs();
           break;
-        case "update":
+        case 'update':
           getLogs();
           return;
-        case "delete":
+        case 'delete':
           return;
       }
     }
   };
 }
-
-sendMessage = (message) => {
+function sendMessage(message) {
   socket.send(JSON.stringify(message));
-};
+}
+
+function toggleFreeze() {
+  frozen = !frozen;
+  const button = document.querySelector('#freeze button');
+  button.innerHTML = frozen ? 'Frozen' : 'Freeze';
+
+  if (frozen) {
+    button.classList.remove('white');
+    button.classList.add('light');
+  } else {
+    button.classList.remove('light');
+    button.classList.add('white');
+  }
+}

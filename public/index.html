@@ -47,7 +47,8 @@
             </ul>
           </nav>
           <input id="search" onkeyup="search(event)" type="text" placeholder="Search" />
-          <div onclick="getLogs()"><button class="white">Refresh</button></div>
+          <div id="refresh" onclick="getLogs()"><button class="white">Refresh</button></div>
+          <div id="freeze" onclick="toggleFreeze()"><button class="white">Freeze</button></div>
       </div>
       <div class="container table-header">
         <div class="col">Type</div>
