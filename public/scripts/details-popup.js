@@ -6,9 +6,9 @@ function showLogDetails(log) {
   const timeInfo =
     log.updatedAt === log.createdAt
       ? getDate(log.updatedAt)
-      : `Updated: ${getDate(log.updatedAt)}.&nbsp;&nbsp;&nbsp;First seen: ${getDate(
-          log.createdAt
-        )}`;
+      : `Updated: ${getDate(
+          log.updatedAt
+        )}.&nbsp;&nbsp;&nbsp;First seen: ${getDate(log.createdAt)}`;
 
   popup.innerHTML = `
     <div class="content center">
@@ -23,7 +23,7 @@ function showLogDetails(log) {
               <h3 class="mt-15">Trace</h3>
               <p class="key pl-2"><span>${getTrace(log.trace)}</span></p>
               `
-              : ""
+              : ''
           }
           ${
             context
@@ -31,7 +31,7 @@ function showLogDetails(log) {
             <h3 class="mt-15">Context</h3>
             <p>${jsonViewer(context)}</p>
             `
-              : ""
+              : ''
           }
           ${
             breadcrumbs && breadcrumbs.length > 0
@@ -39,7 +39,7 @@ function showLogDetails(log) {
             <h3 class="mt-15">Breadcrumbs</h3>
             <p>${jsonViewer(breadcrumbs)}</p>
             `
-              : ""
+              : ''
           }
         <div class="content">
           <button class="white mt-2" onclick="closePopup()">Close</button>
@@ -50,11 +50,11 @@ function showLogDetails(log) {
       </div>
     <div>`;
 
-  popup.style.display = "block";
+  popup.style.display = 'block';
 }
 
 function getObject(context) {
-  if (typeof context === "string") {
+  if (typeof context === 'string') {
     return JSON.parse(context);
   }
 
@@ -62,10 +62,10 @@ function getObject(context) {
 }
 
 function getTrace(trace) {
-  return trace.replace(new RegExp(String.fromCharCode(10), "g"), "<br />");
+  return trace.replace(new RegExp(String.fromCharCode(10), 'g'), '<br />');
 }
 
 function closePopup() {
   const popup = document.getElementById(`popup`);
-  popup.style.display = "none";
+  popup.style.display = 'none';
 }

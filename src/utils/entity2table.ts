@@ -1,5 +1,5 @@
-import { EntitySchema, Table } from "typeorm";
-import { defaultTable } from "../defaults";
+import { EntitySchema, Table } from 'typeorm';
+import { defaultTable } from '../defaults';
 
 export function entity2table(entity: EntitySchema): Table {
   return new Table({
@@ -9,7 +9,7 @@ export function entity2table(entity: EntitySchema): Table {
       type: resolveColumnType(col?.type),
       isPrimary: !!col?.primary,
       isGenerated: !!col?.generated,
-      generationStrategy: col?.generated ? "increment" : undefined,
+      generationStrategy: col?.generated ? 'increment' : undefined,
       isUnique: !!col?.unique,
       isNullable: !!col?.nullable,
       default: col?.default,
@@ -20,14 +20,14 @@ export function entity2table(entity: EntitySchema): Table {
 function resolveColumnType(type: any): string {
   switch (type) {
     case String:
-      return "text";
+      return 'text';
     case Number:
-      return "int";
+      return 'int';
     case Date:
-      return "timestamp";
+      return 'timestamp';
     case Boolean:
-      return "boolean";
+      return 'boolean';
     default:
-      return "text";
+      return 'text';
   }
 }

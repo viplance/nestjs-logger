@@ -1,14 +1,14 @@
-import { DataSourceOptions, EntitySchema } from "typeorm";
+import { DataSourceOptions, EntitySchema } from 'typeorm';
 
 export function createLogEntity(
   name: string,
-  dbType: DataSourceOptions["type"] | "memory"
+  dbType: DataSourceOptions['type'] | 'memory'
 ) {
   return new EntitySchema({
     name,
     columns: {
       _id: {
-        type: dbType === "mongodb" ? String : Number,
+        type: dbType === 'mongodb' ? String : Number,
         objectId: true,
         primary: true,
         generated: true,

@@ -1,14 +1,14 @@
-import { Module, Global, HttpException } from "@nestjs/common";
-import { LogService } from "./services/log.service";
-import { MemoryDbService } from "./services/memory-db.service";
-import { LogInterceptor } from "./interceptors/log.interceptor";
-import { LogModuleOptions } from "./types";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import querystring from "node:querystring";
-import { ApplicationConfig } from "@nestjs/core";
-import { join } from "node:path";
-import { LogAccessGuard } from "./guards/access.guard";
-import { WsService } from "./services/ws.service";
+import { Module, Global, HttpException } from '@nestjs/common';
+import { LogService } from './services/log.service';
+import { MemoryDbService } from './services/memory-db.service';
+import { LogInterceptor } from './interceptors/log.interceptor';
+import { LogModuleOptions } from './types';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import querystring from 'node:querystring';
+import { ApplicationConfig } from '@nestjs/core';
+import { join } from 'node:path';
+import { LogAccessGuard } from './guards/access.guard';
+import { WsService } from './services/ws.service';
 
 @Global()
 @Module({
@@ -40,7 +40,7 @@ export class LogModule {
     app.useGlobalInterceptors(new LogInterceptor(logService)); // intercept all errors
 
     if (options?.path) {
-      app.useStaticAssets(join(__dirname, "..", "public"), {
+      app.useStaticAssets(join(__dirname, '..', 'public'), {
         prefix: options.path,
       });
 
@@ -48,7 +48,7 @@ export class LogModule {
 
       // frontend settings endpoint
       httpAdapter.get(
-        join(options.path, "settings"),
+        join(options.path, 'settings'),
         async (req: any, res: any) => {
           logAccessGuard.canActivate(req);
 
@@ -58,7 +58,7 @@ export class LogModule {
             result.websocket = {
               namespace: options.websocket?.namespace,
               port: options.websocket?.port,
-              host: options.websocket?.host || req.headers?.host.split(":")[0],
+              host: options.websocket?.host || req.headers?.host.split(':')[0],
             };
           }
 
@@ -67,7 +67,7 @@ export class LogModule {
       );
 
       // get all logs endpoint
-      httpAdapter.get(join(options.path, "api"), async (req: any, res: any) => {
+      httpAdapter.get(join(options.path, 'api'), async (req: any, res: any) => {
         logAccessGuard.canActivate(req);
 
         res.json(await logService.getAll());
@@ -75,14 +75,14 @@ export class LogModule {
 
       // delete log endpoint
       httpAdapter.delete(
-        join(options.path, "api"),
+        join(options.path, 'api'),
         async (req: any, res: any) => {
           logAccessGuard.canActivate(req);
 
-          const params = querystring.parse(req.url.split("?")[1]);
+          const params = querystring.parse(req.url.split('?')[1]);
 
           if (!params.id) {
-            throw new HttpException("id is required", 400);
+            throw new HttpException('id is required', 400);
           }
 
           res.json(await logService.delete(params.id.toString()));

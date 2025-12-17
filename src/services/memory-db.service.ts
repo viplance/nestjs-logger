@@ -1,8 +1,8 @@
 // Memory DB layer
-import { Injectable } from "@nestjs/common";
-import { createHash, randomBytes } from "crypto";
-import { defaultTable } from "../defaults";
-import { EntitySchema, FindManyOptions } from "typeorm";
+import { Injectable } from '@nestjs/common';
+import { createHash, randomBytes } from 'crypto';
+import { defaultTable } from '../defaults';
+import { EntitySchema, FindManyOptions } from 'typeorm';
 
 const tables = [defaultTable];
 
@@ -20,8 +20,8 @@ export class MemoryDbService {
     const table = this.getTableName(entity);
 
     // generate new random _id
-    const randomData = randomBytes(24).toString("hex");
-    const _id = createHash("sha256").update(randomData).digest("hex");
+    const randomData = randomBytes(24).toString('hex');
+    const _id = createHash('sha256').update(randomData).digest('hex');
 
     this.db[table].push({
       ...data,
@@ -39,7 +39,7 @@ export class MemoryDbService {
     const table = this.getTableName(entity);
     let index: number | null = null;
 
-    if (typeof condition === "string") {
+    if (typeof condition === 'string') {
       index = this.findIndex(entity, { where: { _id: condition } });
     }
 
@@ -136,8 +136,8 @@ export class MemoryDbService {
     if (
       obj1 == null ||
       obj2 == null ||
-      typeof obj1 !== "object" ||
-      typeof obj2 !== "object"
+      typeof obj1 !== 'object' ||
+      typeof obj2 !== 'object'
     ) {
       return false;
     }

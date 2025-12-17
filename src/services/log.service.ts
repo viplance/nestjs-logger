@@ -3,28 +3,28 @@ import {
   LoggerService,
   OnApplicationShutdown,
   Scope,
-} from "@nestjs/common";
-import { MemoryDbService } from "./memory-db.service";
-import { defaultTable } from "../defaults";
-import { Context, LogModuleOptions, LogType } from "../types";
+} from '@nestjs/common';
+import { MemoryDbService } from './memory-db.service';
+import { defaultTable } from '../defaults';
+import { Context, LogModuleOptions, LogType } from '../types';
 import {
   DataSource,
   DataSourceOptions,
   EntityManager,
   EntitySchema,
-} from "typeorm";
-import { createLogEntity } from "../entities/log.entity";
-import { ExecutionContextHost } from "@nestjs/core/helpers/execution-context-host";
-import { setInterval } from "timers";
-import { entity2table } from "../utils/entity2table";
-import { WsService } from "./ws.service";
-import { Subscription } from "rxjs";
+} from 'typeorm';
+import { createLogEntity } from '../entities/log.entity';
+import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
+import { setInterval } from 'timers';
+import { entity2table } from '../utils/entity2table';
+import { WsService } from './ws.service';
+import { Subscription } from 'rxjs';
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class LogService implements LoggerService, OnApplicationShutdown {
   static connection: DataSource;
   static options: LogModuleOptions;
-  static Log: EntitySchema = createLogEntity(defaultTable, "memory");
+  static Log: EntitySchema = createLogEntity(defaultTable, 'memory');
   static timer: ReturnType<typeof setInterval>;
   static subscription: Subscription;
 
@@ -44,7 +44,7 @@ export class LogService implements LoggerService, OnApplicationShutdown {
   async connectDb(options: LogModuleOptions): Promise<DataSource> {
     LogService.Log = createLogEntity(
       options.database?.collection || options.database?.table || defaultTable,
-      options.database?.type || "mongodb"
+      options.database?.type || 'mongodb'
     );
 
     if (!LogService.options) {
@@ -62,7 +62,7 @@ export class LogService implements LoggerService, OnApplicationShutdown {
     LogService.connection = new DataSource(dataSourceOptions);
     await LogService.connection.initialize();
 
-    if (dataSourceOptions.type !== "mongodb") {
+    if (dataSourceOptions.type !== 'mongodb') {
       const queryRunner = LogService.connection.createQueryRunner();
 
       try {
@@ -92,13 +92,13 @@ export class LogService implements LoggerService, OnApplicationShutdown {
       LogService.subscription = this.wsService.onMessage.subscribe(
         async (message) => {
           switch (message.action) {
-            case "getLogs":
+            case 'getLogs':
               this.wsService.sendMessage({
-                action: "list",
+                action: 'list',
                 data: await this.getAll(),
               });
               break;
-            case "delete":
+            case 'delete':
               this.delete(message.data._id);
               break;
           }
@@ -159,23 +159,23 @@ export class LogService implements LoggerService, OnApplicationShutdown {
   async getAll(): Promise<any[]> {
     return this.getConnection().find(LogService.Log, {
       select: [
-        "_id",
-        "type",
-        "message",
-        "count",
-        "createdAt",
-        "updatedAt",
-        "context",
-        "trace",
-        "breadcrumbs",
+        '_id',
+        'type',
+        'message',
+        'count',
+        'createdAt',
+        'updatedAt',
+        'context',
+        'trace',
+        'breadcrumbs',
       ],
-      order: { updatedAt: "DESC" },
+      order: { updatedAt: 'DESC' },
     });
   }
 
   async delete(_id: string) {
     this.wsService.sendMessage({
-      action: "delete",
+      action: 'delete',
       data: { _id },
     });
     return this.getConnection().delete(LogService.Log, _id);
@@ -192,12 +192,16 @@ export class LogService implements LoggerService, OnApplicationShutdown {
     const connection = this.getConnection();
 
     // find the same log in DB
-    const log = await connection.findOne(LogService.Log, {
-      where: {
-        type: data.type,
-        message: data.message,
-      },
-    });
+    let log;
+
+    if (LogService.options.join) {
+      log = await connection.findOne(LogService.Log, {
+        where: {
+          type: data.type,
+          message: data.message,
+        },
+      });
+    }
 
     const context = data.context ? this.parseContext(data.context) : undefined;
 
@@ -211,11 +215,11 @@ export class LogService implements LoggerService, OnApplicationShutdown {
       };
 
       this.wsService.sendMessage({
-        action: "update",
+        action: 'update',
         data: { ...log, ...updatedLog },
       });
 
-      await connection.update(LogService.Log, log["_id"], {
+      await connection.update(LogService.Log, log['_id'], {
         context,
         trace: data.trace,
         breadcrumbs: this.breadcrumbs,
@@ -241,7 +245,7 @@ export class LogService implements LoggerService, OnApplicationShutdown {
     const _id = this.getNewObjectId(res);
 
     this.wsService.sendMessage({
-      action: "insert",
+      action: 'insert',
       data: { _id, ...insertedLog },
     });
 
@@ -299,9 +303,9 @@ export class LogService implements LoggerService, OnApplicationShutdown {
   private async checkRecords() {
     if (LogService.options?.maxSize) {
       const latest = await this.getConnection().find(LogService.Log, {
-        order: { updatedAt: "DESC" },
+        order: { updatedAt: 'DESC' },
         take: LogService.options?.maxSize,
-        select: ["_id"],
+        select: ['_id'],
       });
 
       const latestIds = latest.map((item) => item.id);
@@ -311,7 +315,7 @@ export class LogService implements LoggerService, OnApplicationShutdown {
         .createQueryBuilder()
         .delete()
         .from(LogService.Log)
-        .where("_id NOT IN (:...ids)", { ids: latestIds })
+        .where('_id NOT IN (:...ids)', { ids: latestIds })
         .execute();
     }
   }

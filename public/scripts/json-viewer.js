@@ -1,6 +1,6 @@
 function jsonViewer(json, parentKey) {
   if (!json) {
-    return "";
+    return '';
   }
 
   res = `<div>`;
@@ -8,7 +8,7 @@ function jsonViewer(json, parentKey) {
   if (Array.isArray(json)) {
     json.forEach((item) => {
       res += `<div class="key pl-2">${
-        typeof item === "object" ? jsonViewer(item) : `<span>${item}</span>`
+        typeof item === 'object' ? jsonViewer(item) : `<span>${item}</span>`
       }</div>`;
     });
 
@@ -23,7 +23,7 @@ function jsonViewer(json, parentKey) {
   }
 
   for (const key of keys) {
-    if (typeof json[key] === "object") {
+    if (typeof json[key] === 'object') {
       res += jsonViewer(json[key], key);
     } else {
       res += `<div class="key pl-2">${key}: <span>${json[key]}</span></div>`;
@@ -34,7 +34,7 @@ function jsonViewer(json, parentKey) {
     res += `</div>`;
   }
 
-  res += "</div>";
+  res += '</div>';
 
   return res;
 }

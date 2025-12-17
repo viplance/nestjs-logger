@@ -67,11 +67,31 @@ Enable a WebSocket connection to receive the logs in real time.<br />
 
 ### Additional information
 
-- `path`, `key` and `database` properties are optional.
-- The logs could be available at `your_application_url`/`path`?key=`key`
+- `path`, `key`, `database` and `websocket` properties are optional.
+- The log UI could be available at `your_application_url`/`path`?key=`key` or WebSocket port
 - The log API could be available at `your_application_url`/`path`/api?key=`key`
 - By default the logs will be stored in memory and deleted when the application stops.<br />
 <br />
+
+### The LogModule options:
+- path?: string;
+- key?: string; // access key
+- join?: boolean; // merge the message duplicates
+- maxRecords?: number; // max log records
+- maxAge?: number; // in days
+- maxSize?: number; // in megabytes
+- database?: DataSourceOptions & {
+    host?: string;
+    port?: string;
+    table?: string;
+    collection?: string;
+  };
+- websocket?: {
+    port?: number;
+    namespace?: string;
+    host?: string;
+    secure?: boolean;
+  };
 
 ### The LogService methods:
 - log(message: string)
@@ -79,4 +99,4 @@ Enable a WebSocket connection to receive the logs in real time.<br />
 - warn(message: string)
 - debug(message: string)
 - verbose(message: string)
-- addBreadcrumb(breadcrumb: any)
+- addBreadcrumb(breadcrumb: any) - adds extra details to the logs for the current request

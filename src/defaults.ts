@@ -1,1 +1,1 @@
-export const defaultTable = "logs";
+export const defaultTable = 'logs';

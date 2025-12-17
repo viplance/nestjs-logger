@@ -1,1 +1,1 @@
-declare module "ws";
+declare module 'ws';

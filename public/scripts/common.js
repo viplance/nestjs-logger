@@ -10,7 +10,7 @@ const selectedLogTypes = {
 const logTypes = Object.keys(selectedLogTypes).filter((key) => key !== `all`);
 
 let logs = [];
-let text = "";
+let text = '';
 
 connectWebSocket();
 
@@ -105,12 +105,12 @@ function getDate(incomingDate) {
   const date = new Date(incomingDate);
 
   const formatter = new Intl.DateTimeFormat(undefined, {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    month: 'short',
+    day: '2-digit',
+    year: 'numeric',
     hour12: false,
   });
 
@@ -133,20 +133,20 @@ function getLogHtmlElement(log) {
         <div class="log-info">${log.message}</div>
         <div class="date">${getDate(log.updatedAt)}</div>
       </div>
-      <div class="col context">${log.trace || ""}</div>
+      <div class="col context">${log.trace || ''}</div>
       <div class="col">${log.count}</div>
     </div>`;
 }
 
 function renderLogs(logList = logs) {
-  let html = "";
+  let html = '';
 
   logList
     .filter((log) => {
-      return selectedLogTypes["all"] || selectedLogTypes[log.type];
+      return selectedLogTypes['all'] || selectedLogTypes[log.type];
     })
     .filter((log) => {
-      if (text === "") return true;
+      if (text === '') return true;
 
       return (
         log.message.toLowerCase().includes(text) ||
@@ -160,32 +160,32 @@ function renderLogs(logList = logs) {
       html += getLogHtmlElement(log);
     });
 
-  document.getElementById("logs").innerHTML = html;
+  document.getElementById('logs').innerHTML = html;
 }
 
 async function checkElementsVisibility(logList = logs) {
   if (logList.length === 0) {
-    document.getElementById("no-logs").style.display = "block";
-    document.getElementById("search").style.display = "none";
-    document.querySelector(".table-header").style.display = "none";
-    document.querySelector("nav").style.display = "none";
+    document.getElementById('no-logs').style.display = 'block';
+    document.getElementById('search').style.display = 'none';
+    document.querySelector('.table-header').style.display = 'none';
+    document.querySelector('nav').style.display = 'none';
   } else {
-    document.getElementById("no-logs").style.display = "none";
-    document.getElementById("search").style.display = "inline-block";
-    document.querySelector(".table-header").style.display = "flex";
-    document.querySelector("nav").style.display = "flex";
+    document.getElementById('no-logs').style.display = 'none';
+    document.getElementById('search').style.display = 'inline-block';
+    document.querySelector('.table-header').style.display = 'flex';
+    document.querySelector('nav').style.display = 'flex';
   }
 }
 
 async function getLogs() {
   const { origin, pathname, search } = window.location;
   const searchParams = new URLSearchParams(search);
-  const key = searchParams.get("key");
+  const key = searchParams.get('key');
 
   if (!!socket) {
     socket.send(
       JSON.stringify({
-        action: "getLogs",
+        action: 'getLogs',
         key,
       })
     );
@@ -199,7 +199,7 @@ async function getLogs() {
 
       renderLogs();
     } else {
-      alert("An error occurred while fetching logs.");
+      alert('An error occurred while fetching logs.');
     }
   }
 }
@@ -210,12 +210,12 @@ async function deleteLog(_id) {
   const { origin, pathname, search: searchParams } = window.location;
 
   const searchParamsWithId = new URLSearchParams(searchParams);
-  const key = searchParamsWithId.get("key");
+  const key = searchParamsWithId.get('key');
 
   if (!!socket) {
     socket.send(
       JSON.stringify({
-        action: "delete",
+        action: 'delete',
         key,
         data: {
           _id,
@@ -225,12 +225,12 @@ async function deleteLog(_id) {
     closePopup();
     getLogs();
   } else {
-    searchParamsWithId.set("id", _id);
+    searchParamsWithId.set('id', _id);
 
     const res = await fetch(
       `${origin}${pathname}api?${searchParamsWithId.toString()}`,
       {
-        method: "DELETE",
+        method: 'DELETE',
       }
     );
 
@@ -238,7 +238,7 @@ async function deleteLog(_id) {
       closePopup();
       getLogs();
     } else {
-      alert("An error occurred while deleting log.");
+      alert('An error occurred while deleting log.');
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@viplance/nestjs-logger",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "NestJS internal logging system",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -21,6 +21,9 @@
     "mariadb",
     "sqlite",
     "memory",
+    "websocket",
+    "realtime",
+    "UI",
     "free"
   ],
   "author": "Dzmitry Sharko",
