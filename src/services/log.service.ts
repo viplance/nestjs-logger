@@ -194,7 +194,7 @@ export class LogService implements LoggerService, OnApplicationShutdown {
     // find the same log in DB
     let log;
 
-    if (LogService.options.join) {
+    if (LogService.options?.join) {
       log = await connection.findOne(LogService.Log, {
         where: {
           type: data.type,
