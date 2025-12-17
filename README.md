@@ -92,11 +92,12 @@ Enable a WebSocket connection to receive the logs in real time.<br />
     host?: string;
     secure?: boolean;
   };
+<br />
 
 ### The LogService methods:
-- log(message: string)
-- error(message: string)
-- warn(message: string)
-- debug(message: string)
-- verbose(message: string)
+- log(message: string, context?: object)
+- error(message: string, context?: object)
+- warn(message: string, context?: object)
+- debug(message: string, context?: object)
+- verbose(message: string, context?: object)
 - addBreadcrumb(breadcrumb: any) - adds extra details to the logs for the current request

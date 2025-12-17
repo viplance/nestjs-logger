@@ -115,7 +115,7 @@ export class LogService implements LoggerService, OnApplicationShutdown {
     this.breadcrumbs = [];
   }
 
-  log(message: string, context?: ExecutionContextHost) {
+  log(message: string, context?: ExecutionContextHost | object) {
     this.smartInsert({
       type: LogType.LOG,
       message,
@@ -123,7 +123,11 @@ export class LogService implements LoggerService, OnApplicationShutdown {
     });
   }
 
-  error(message: string, trace?: string, context?: ExecutionContextHost) {
+  error(
+    message: string,
+    trace?: string,
+    context?: ExecutionContextHost | object
+  ) {
     this.smartInsert({
       type: LogType.ERROR,
       message,
@@ -132,7 +136,7 @@ export class LogService implements LoggerService, OnApplicationShutdown {
     });
   }
 
-  warn(message: string, context?: ExecutionContextHost) {
+  warn(message: string, context?: ExecutionContextHost | object) {
     this.smartInsert({
       type: LogType.WARN,
       message,
@@ -140,7 +144,7 @@ export class LogService implements LoggerService, OnApplicationShutdown {
     });
   }
 
-  debug(message: string, context?: ExecutionContextHost) {
+  debug(message: string, context?: ExecutionContextHost | object) {
     this.smartInsert({
       type: LogType.DEBUG,
       message,
@@ -184,7 +188,7 @@ export class LogService implements LoggerService, OnApplicationShutdown {
   private async smartInsert(data: {
     type: LogType;
     message: string;
-    context?: ExecutionContextHost;
+    context?: ExecutionContextHost | object;
     trace?: any;
   }): Promise<any> {
     const currentDate = new Date();
@@ -203,7 +207,10 @@ export class LogService implements LoggerService, OnApplicationShutdown {
       });
     }
 
-    const context = data.context ? this.parseContext(data.context) : undefined;
+    const context =
+      data.context instanceof ExecutionContextHost
+        ? this.parseContext(data.context)
+        : data.context;
 
     if (log) {
       const updatedLog = {
