@@ -4,6 +4,10 @@
 [![npm version](https://img.shields.io/npm/v/@viplance/nestjs-logger.svg?style=flat-square)](https://www.npmjs.com/package/@viplance/nestjs-logger)
 [![GitHub stars](https://img.shields.io/github/stars/viplance/nestjs-logger.svg?style=social)](https://github.com/viplance/nestjs-logger)
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/viplance/nestjs-logger/refs/heads/main/nestjs-logger.heic" width="100%" title="NestJS logger">
+</p>
+
 ### Installation
 1. Install the package `npm i @viplance/nestjs-logger`<br />
 2. Import the module in app.module.ts<br />
