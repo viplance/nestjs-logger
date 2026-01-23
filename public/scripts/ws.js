@@ -23,9 +23,10 @@ async function connectWebSocket() {
     document.getElementById('refresh').style.display = 'block';
     document.getElementById('freeze').style.display = 'none';
     getLogs();
+    return;
   }
 
-  if (!!settings.websocket && !settings.websocket?.port) {
+  if (!settings.websocket?.port) {
     alert('WebSocket port is not configured properly.');
     return;
   }
