@@ -8,21 +8,25 @@ async function connectWebSocket() {
   const res = await fetch(`${origin}${pathname}settings${search}`);
 
   if (!res.ok) {
-    alert('An error occurred while fetching settings.');
+    alert(
+      'An error occurred while fetching settings. Check the `key` url parameter.'
+    );
     return;
   }
 
   const settings = await res.json();
 
-  if (!settings.websocket) {
-    getLogs();
+  if (!!settings.websocket) {
+    document.getElementById('refresh').style.display = 'none';
+    document.getElementById('freeze').style.display = 'block';
+  } else {
     document.getElementById('refresh').style.display = 'block';
+    document.getElementById('freeze').style.display = 'none';
+    getLogs();
   }
 
-  document.getElementById('freeze').style.display = 'block';
-
-  if (!settings.websocket?.port) {
-    alert('WebSocket port is not configured.');
+  if (!!settings.websocket && !settings.websocket?.port) {
+    alert('WebSocket port is not configured properly.');
     return;
   }
 
