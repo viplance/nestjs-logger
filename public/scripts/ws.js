@@ -9,7 +9,7 @@ async function connectWebSocket() {
 
   if (!res.ok) {
     alert(
-      'An error occurred while fetching settings. Check the `key` url parameter.'
+      'An error occurred while fetching settings. Check the `key` url parameter.',
     );
     return;
   }
@@ -56,15 +56,17 @@ async function connectWebSocket() {
           logs = data['data'];
           checkElementsVisibility(logs);
           renderLogs(logs);
+          checkAndUpdatePopup();
           break;
         case 'insert':
           getLogs();
           break;
         case 'update':
           getLogs();
-          return;
+          break;
         case 'delete':
-          return;
+          getLogs();
+          break;
       }
     }
   };
@@ -84,5 +86,6 @@ function toggleFreeze() {
   } else {
     button.classList.remove('light');
     button.classList.add('white');
+    getLogs();
   }
 }

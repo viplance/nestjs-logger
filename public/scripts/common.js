@@ -187,7 +187,7 @@ async function getLogs() {
       JSON.stringify({
         action: 'getLogs',
         key,
-      })
+      }),
     );
   } else {
     const res = await fetch(`${origin}${pathname}api${search}`);
@@ -198,6 +198,7 @@ async function getLogs() {
       checkElementsVisibility();
 
       renderLogs();
+      checkAndUpdatePopup();
     } else {
       alert('An error occurred while fetching logs.');
     }
@@ -220,7 +221,7 @@ async function deleteLog(_id) {
         data: {
           _id,
         },
-      })
+      }),
     );
     closePopup();
     getLogs();
@@ -231,7 +232,7 @@ async function deleteLog(_id) {
       `${origin}${pathname}api?${searchParamsWithId.toString()}`,
       {
         method: 'DELETE',
-      }
+      },
     );
 
     if (res.ok) {

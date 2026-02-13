@@ -27,10 +27,8 @@ export class LogModule {
     app: any,
     options?: LogModuleOptions
   ): Promise<void> {
-    app.resolve(LogService);
-
-    const logService: LogService = await app.resolve(LogService);
-    const wsService: WsService = await app.resolve(WsService);
+    const logService: LogService = await app.get(LogService);
+    const wsService: WsService = await app.get(WsService);
     const logAccessGuard: LogAccessGuard = await app.get(LogAccessGuard);
 
     if (options) {

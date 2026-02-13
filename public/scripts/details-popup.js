@@ -1,6 +1,9 @@
 const popup = document.getElementById('popup');
+let selectedLogId = null;
 
 function showLogDetails(log) {
+  selectedLogId = log._id;
+
   const context = getObject(log.context);
   const breadcrumbs = getObject(log.breadcrumbs);
 
@@ -117,7 +120,19 @@ function getTrace(trace) {
 }
 
 function closePopup() {
+  selectedLogId = null;
   popup.style.display = 'none';
+}
+
+function checkAndUpdatePopup() {
+  if (selectedLogId) {
+    const log = logs.find((log) => log._id === selectedLogId);
+    if (log) {
+      showLogDetails(log);
+    } else {
+      closePopup();
+    }
+  }
 }
 
 function setPopupLeft(left) {

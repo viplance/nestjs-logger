@@ -2,7 +2,6 @@ import {
   Injectable,
   LoggerService,
   OnApplicationShutdown,
-  Scope,
 } from '@nestjs/common';
 import { MemoryDbService } from './memory-db.service';
 import { defaultTable } from '../defaults';
@@ -20,7 +19,7 @@ import { entity2table } from '../utils/entity2table';
 import { WsService } from './ws.service';
 import { Subscription } from 'rxjs';
 
-@Injectable({ scope: Scope.TRANSIENT })
+@Injectable()
 export class LogService implements LoggerService, OnApplicationShutdown {
   static connection: DataSource;
   static options: LogModuleOptions;
@@ -33,7 +32,7 @@ export class LogService implements LoggerService, OnApplicationShutdown {
   constructor(
     private readonly memoryDbService: MemoryDbService,
     private readonly wsService: WsService
-  ) {}
+  ) { }
 
   onApplicationShutdown() {
     if (LogService.timer) {
