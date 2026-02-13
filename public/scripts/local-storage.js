@@ -1,10 +1,14 @@
 const LS_KEY = 'nestjs-logger';
 
+const defaultSettings = {
+  popupLeft: '0px',
+};
+
 function getLs(propertyName) {
   const item = localStorage.getItem(LS_KEY);
 
   if (!item) {
-    return;
+    return defaultSettings[propertyName];
   }
 
   return JSON.parse(item)[propertyName];
@@ -12,12 +16,8 @@ function getLs(propertyName) {
 
 function setLs(propertyName, value) {
   const item = localStorage.getItem(LS_KEY);
+  const ls = item ? JSON.parse(item) : { ...defaultSettings };
 
-  if (!item) {
-    localStorage.setItem(LS_KEY, JSON.stringify({}));
-  }
-
-  const ls = JSON.parse(item);
   ls[propertyName] = value;
   localStorage.setItem(LS_KEY, JSON.stringify(ls));
 }
