@@ -1,7 +1,7 @@
 const LS_KEY = 'nestjs-logger';
 
 const defaultSettings = {
-  popupLeft: '0px',
+  popupLeft: `${window.innerWidth / 2}px`,
 };
 
 function getLs(propertyName) {
