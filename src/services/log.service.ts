@@ -99,7 +99,8 @@ export class LogService implements LoggerService, OnApplicationShutdown {
                 data: await this.getAll(
                   message.page,
                   message.limit,
-                  message.search
+                  message.search,
+                  message.types
                 ),
               });
               break;
