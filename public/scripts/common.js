@@ -11,6 +11,10 @@ const logTypes = Object.keys(selectedLogTypes).filter((key) => key !== `all`);
 
 let logs = [];
 let text = '';
+let currentPage = 1;
+let isLoading = false;
+let hasMore = true;
+const limit = 10;
 
 connectWebSocket();
 
@@ -177,29 +181,57 @@ async function checkElementsVisibility(logList = logs) {
   }
 }
 
-async function getLogs() {
-  const { origin, pathname, search } = window.location;
-  const searchParams = new URLSearchParams(search);
+async function getLogs(page = 1) {
+  if (isLoading && page > 1) return;
+  if (page > 1 && !hasMore) return;
+
+  isLoading = true;
+  currentPage = page;
+  document.getElementById('loader').style.display = 'block';
+
+  const { origin, pathname, search: urlSearch } = window.location;
+  const searchParams = new URLSearchParams(urlSearch);
   const key = searchParams.get('key');
 
-  if (!!socket) {
+  if (!!socket && socket.readyState === WebSocket.OPEN) {
     socket.send(
       JSON.stringify({
         action: 'getLogs',
         key,
+        page,
+        limit,
+        search: text,
       }),
     );
   } else {
-    const res = await fetch(`${origin}${pathname}api${search}`);
+    const apiParams = new URLSearchParams(urlSearch);
+    apiParams.set('page', page);
+    apiParams.set('limit', limit);
+    if (text) {
+      apiParams.set('search', text);
+    }
+
+    const res = await fetch(`${origin}${pathname}api?${apiParams.toString()}`);
 
     if (res.ok) {
-      logs = await res.json();
+      const newLogs = await res.json();
+
+      if (page === 1) {
+        logs = newLogs;
+      } else {
+        logs = logs.concat(newLogs);
+      }
+
+      hasMore = newLogs.length === limit;
+      isLoading = false;
+      document.getElementById('loader').style.display = 'none';
 
       checkElementsVisibility();
-
       renderLogs();
       checkAndUpdatePopup();
     } else {
+      isLoading = false;
+      document.getElementById('loader').style.display = 'none';
       alert('An error occurred while fetching logs.');
     }
   }
@@ -244,8 +276,31 @@ async function deleteLog(_id) {
   }
 }
 
+let searchTimeout;
 function search(event) {
   text = event.target.value.toLowerCase();
 
-  renderLogs();
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    currentPage = 1;
+    hasMore = true;
+    getLogs(1);
+  }, 300);
 }
+
+// Infinite scrolling
+const observer = new IntersectionObserver(
+  (entries) => {
+    if (entries[0].isIntersecting && !isLoading && hasMore) {
+      getLogs(currentPage + 1);
+    }
+  },
+  { threshold: 1.0 },
+);
+
+document.addEventListener('DOMContentLoaded', () => {
+  const scrollAnchor = document.getElementById('scroll-anchor');
+  if (scrollAnchor) {
+    observer.observe(scrollAnchor);
+  }
+});

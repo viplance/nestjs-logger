@@ -64,11 +64,16 @@ export class LogModule {
         }
       );
 
-      // get all logs endpoint
+      // get logs endpoint
       httpAdapter.get(join(options.path, 'api'), async (req: any, res: any) => {
         logAccessGuard.canActivate(req);
 
-        res.json(await logService.getAll());
+        const params = querystring.parse(req.url.split('?')[1]);
+        const page = params.page ? parseInt(params.page.toString()) : 1;
+        const limit = params.limit ? parseInt(params.limit.toString()) : 50;
+        const search = params.search ? params.search.toString() : '';
+
+        res.json(await logService.getAll(page, limit, search));
       });
 
       // delete log endpoint

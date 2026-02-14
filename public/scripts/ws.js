@@ -53,7 +53,14 @@ async function connectWebSocket() {
     if (data['action'] && !frozen) {
       switch (data['action']) {
         case 'list':
-          logs = data['data'];
+          if (currentPage === 1) {
+            logs = data['data'];
+          } else {
+            logs = logs.concat(data['data']);
+          }
+          hasMore = data['data'].length === limit;
+          isLoading = false;
+          document.getElementById('loader').style.display = 'none';
           checkElementsVisibility(logs);
           renderLogs(logs);
           checkAndUpdatePopup();

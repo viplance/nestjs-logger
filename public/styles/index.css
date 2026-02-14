@@ -63,6 +63,18 @@ h3 {
   text-align: center;
 }
 
+#loader {
+  display: none;
+  text-align: center;
+  padding: 1rem;
+  color: var(--teal);
+  font-weight: bold;
+}
+
+#scroll-anchor {
+  height: 20px;
+}
+
 /* buttons */
 button {
   display: flex;
@@ -316,7 +328,9 @@ nav ul li:hover {
   overflow-y: scroll;
   z-index: 1;
   opacity: 0.97;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  box-shadow:
+    0 4px 8px 0 rgba(0, 0, 0, 0.2),
+    0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
 /* JSON viewer */

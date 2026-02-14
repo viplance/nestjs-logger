@@ -11,6 +11,7 @@ import {
   DataSourceOptions,
   EntityManager,
   EntitySchema,
+  Like,
 } from 'typeorm';
 import { createLogEntity } from '../entities/log.entity';
 import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
@@ -94,7 +95,11 @@ export class LogService implements LoggerService, OnApplicationShutdown {
             case 'getLogs':
               this.wsService.sendMessage({
                 action: 'list',
-                data: await this.getAll(),
+                data: await this.getAll(
+                  message.page,
+                  message.limit,
+                  message.search
+                ),
               });
               break;
             case 'delete':
@@ -159,8 +164,15 @@ export class LogService implements LoggerService, OnApplicationShutdown {
     });
   }
 
-  async getAll(): Promise<any[]> {
-    return this.getConnection().find(LogService.Log, {
+  async getAll(
+    page: number = 1,
+    limit: number = 50,
+    search: string = ''
+  ): Promise<any[]> {
+    const skip = (page - 1) * limit;
+    const take = limit;
+
+    const findOptions: any = {
       select: [
         '_id',
         'type',
@@ -173,7 +185,27 @@ export class LogService implements LoggerService, OnApplicationShutdown {
         'breadcrumbs',
       ],
       order: { updatedAt: 'DESC' },
-    });
+      take,
+      skip,
+    };
+
+    if (search) {
+      if (LogService.options?.database?.type === 'mongodb') {
+        findOptions.where = {
+          $or: [
+            { message: { $regex: search, $options: 'i' } },
+            { trace: { $regex: search, $options: 'i' } },
+          ],
+        };
+      } else {
+        findOptions.where = [
+          { message: Like(`%${search}%`) },
+          { trace: Like(`%${search}%`) },
+        ];
+      }
+    }
+
+    return this.getConnection().find(LogService.Log, findOptions);
   }
 
   async delete(_id: string) {

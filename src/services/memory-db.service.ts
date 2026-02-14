@@ -63,10 +63,60 @@ export class MemoryDbService {
     entity: EntitySchema,
     options?: {
       select?: string[];
+      where?: any;
+      order?: { [key: string]: 'ASC' | 'DESC' };
+      take?: number;
+      skip?: number;
     }
   ): Promise<any[]> {
     const table = this.getTableName(entity);
+    let data = [...this.db[table]];
 
+    // filter by search if where contains $or or Like (simplified for memory db)
+    if (options?.where) {
+      if (options.where.$or) {
+        const search = options.where.$or[0].message.$regex;
+        if (search) {
+          const regex = new RegExp(search, 'i');
+          data = data.filter(
+            (item) => regex.test(item.message) || regex.test(item.trace || '')
+          );
+        }
+      } else if (Array.isArray(options.where)) {
+        // handle Like constraints
+        const searchItem = options.where.find((w: any) => w.message);
+        if (searchItem && searchItem.message) {
+          const search = searchItem.message.replace(/%/g, '');
+          const regex = new RegExp(search, 'i');
+          data = data.filter(
+            (item) => regex.test(item.message) || regex.test(item.trace || '')
+          );
+        }
+      }
+    }
+
+    // sort
+    if (options?.order) {
+      const field = Object.keys(options.order)[0];
+      const direction = options.order[field];
+      data.sort((a, b) => {
+        if (a[field] < b[field]) return direction === 'ASC' ? -1 : 1;
+        if (a[field] > b[field]) return direction === 'ASC' ? 1 : -1;
+        return 0;
+      });
+    } else {
+      data.sort((a, b) => b.updatedAt - a.updatedAt);
+    }
+
+    // pagination
+    if (options?.skip !== undefined) {
+      data = data.slice(options.skip);
+    }
+    if (options?.take !== undefined) {
+      data = data.slice(0, options.take);
+    }
+
+    // mapping (select)
     let mapOptions = (obj: any) => obj; // return the object as is by default
 
     if (options?.select) {
@@ -81,9 +131,7 @@ export class MemoryDbService {
       };
     }
 
-    return Promise.resolve(
-      this.db[table].map(mapOptions).sort((a, b) => b.updatedAt - a.updatedAt)
-    );
+    return Promise.resolve(data.map(mapOptions));
   }
 
   public async getOneById(entity: EntitySchema, _id: string): Promise<any> {
