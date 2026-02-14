@@ -54,7 +54,7 @@ h3 {
 }
 
 #logs {
-  margin-top: 4rem;
+  margin-top: 7rem;
 }
 
 #no-logs {
@@ -333,6 +333,24 @@ nav ul li:hover {
     0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
+#drag-handle {
+  margin: -2rem -2rem 1rem -2rem;
+  height: 1.5rem;
+  background-color: #f1f1f1;
+  border-bottom: 1px solid #ddd;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#drag-handle .handle-indicator {
+  width: 50px;
+  height: 5px;
+  background-color: #ccc;
+  border-radius: 5px;
+}
+
 /* JSON viewer */
 .key {
   font-size: 0.9rem;
@@ -359,5 +377,147 @@ nav ul li:hover {
     width: 100%;
     left: 0;
     box-shadow: none;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Allow header to flow naturally */
+  header {
+    position: relative !important;
+    padding-bottom: 1rem;
+    height: auto;
+  }
+
+  /* Reset logo from previous media query */
+  .logo {
+    width: 100%;
+    margin: 0 !important;
+    justify-content: center;
+  }
+
+  /* Show title again for branding */
+  .logo h2 {
+    display: block !important;
+    margin-left: 0.5rem;
+    font-size: 1.2rem;
+  }
+
+  /* Wrap controls */
+  .controls {
+    flex-wrap: wrap;
+    padding: 0 1rem;
+  }
+
+  /* Nav */
+  nav {
+    width: 100%;
+    order: 2;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 1rem;
+  }
+
+  nav ul {
+    width: max-content;
+    padding: 0 0.5rem;
+    gap: 1.5rem;
+    justify-content: flex-start;
+  }
+
+  /* Search */
+  #search {
+    order: 3;
+    width: 100%;
+    margin-bottom: 1rem;
+    box-sizing: border-box;
+  }
+
+  /* Buttons */
+  #refresh,
+  #freeze {
+    order: 4;
+    width: 48%;
+  }
+
+  #refresh button,
+  #freeze button {
+    width: 100%;
+    justify-content: center;
+    padding: 10px;
+    margin-bottom: 1rem;
+  }
+
+  /* Logs Container */
+  #logs {
+    margin-top: 0;
+  }
+
+  /* Hide Table Header */
+  .table-header {
+    display: none;
+  }
+
+  /* Row Layout */
+  .row {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--light);
+    align-items: flex-start;
+  }
+
+  .row:hover {
+    border-left: 2px solid transparent;
+    background-color: transparent;
+  }
+
+  .row:active {
+    background-color: #f5f5f5;
+  }
+
+  /* Type */
+  .row > :first-child {
+    flex: 0 0 3.5rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    padding-left: 0.5rem;
+    text-align: left;
+  }
+
+  /* Info */
+  .row > :nth-child(2) {
+    flex: 1 1 auto;
+    max-width: calc(100% - 6.5rem);
+    padding: 0 0.5rem;
+  }
+
+  .log-info {
+    white-space: normal;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    max-height: 2.8rem;
+    margin-bottom: 0.2rem;
+  }
+
+  /* Hide Context */
+  .row > :nth-child(3) {
+    display: none;
+  }
+
+  /* Count */
+  .row > :last-child {
+    flex: 0 0 2rem;
+    font-size: 0.8rem;
+    color: #aaa;
+    text-align: right;
+    padding-right: 0.5rem;
+  }
+
+  #drag-handle {
+    display: none;
   }
 }

@@ -21,8 +21,8 @@ function showLogDetails(log) {
         )}.&nbsp;&nbsp;&nbsp;First seen: ${getDate(log.createdAt)}`;
 
   popup.innerHTML = `
-    <div id="drag-handle" style="margin: -2rem -2rem 1rem -2rem; height: 1.5rem; background-color: #f1f1f1; border-bottom: 1px solid #ddd; cursor: grab; display: flex; align-items: center; justify-content: center;" title="Drag to move">
-        <div style="width: 50px; height: 5px; background-color: #ccc; border-radius: 5px;"></div>
+    <div id="drag-handle" title="Drag to move">
+        <div class="handle-indicator"></div>
     </div>
     <div class="content center">
       <div class="container">
