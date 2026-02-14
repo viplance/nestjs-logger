@@ -304,3 +304,30 @@ document.addEventListener('DOMContentLoaded', () => {
     observer.observe(scrollAnchor);
   }
 });
+
+function handleWsInsert(log) {
+  logs.unshift(log);
+  checkElementsVisibility();
+  renderLogs();
+}
+
+function handleWsUpdate(updatedLog) {
+  const idx = logs.findIndex((l) => l._id === updatedLog._id);
+  if (idx > -1) {
+    logs.splice(idx, 1);
+  }
+  logs.unshift(updatedLog);
+  checkElementsVisibility();
+  renderLogs();
+  checkAndUpdatePopup();
+}
+
+function handleWsDelete(id) {
+  const idx = logs.findIndex((l) => l._id === id);
+  if (idx > -1) {
+    logs.splice(idx, 1);
+    checkElementsVisibility();
+    renderLogs();
+    checkAndUpdatePopup();
+  }
+}

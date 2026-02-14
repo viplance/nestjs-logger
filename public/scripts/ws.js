@@ -66,13 +66,15 @@ async function connectWebSocket() {
           checkAndUpdatePopup();
           break;
         case 'insert':
-          getLogs();
+          if (currentPage === 1) {
+            handleWsInsert(data['data']);
+          }
           break;
         case 'update':
-          getLogs();
+          handleWsUpdate(data['data']);
           break;
         case 'delete':
-          getLogs();
+          handleWsDelete(data['data']._id);
           break;
       }
     }
