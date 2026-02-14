@@ -6,14 +6,14 @@ import { Subject } from 'rxjs';
 @Injectable()
 export class WsService {
   public onMessage: Subject<any> = new Subject();
-  private ws: WebSocket | null = null;
-  private connected: boolean = false;
+  private clients: Set<any> = new Set();
   private connectionTimeout: number = 500;
   private options: LogModuleOptions['websocket'] = {
     port: 8080,
     host: 'localhost',
   };
   private key: string = '';
+  private wsServer: any | null = null;
 
   setupConnection(options: LogModuleOptions['websocket'], key = '') {
     this.options = {
@@ -23,11 +23,11 @@ export class WsService {
     this.key = key;
 
     // Set up Web Socket server
-    if (this.ws) {
+    if (this.wsServer) {
       return;
     }
 
-    const wsServer = new WebSocketServer({
+    this.wsServer = new WebSocketServer({
       retryCount: 1,
       reconnectInterval: 1,
       handshakeTimeout: this.connectionTimeout,
@@ -38,45 +38,44 @@ export class WsService {
       `Logs WebSocket server is listening on port ${this.options.port}`
     );
 
-    wsServer.on('error', this.handleError);
-    wsServer.on('open', () => this.handleOpenConnection());
-    wsServer.on('ping', () => this.ping(this.ws));
-    wsServer.on('close', () => this.closeConnection(this.ws));
-    wsServer.on('message', this.handleMessage);
-    wsServer.on('connection', (connection: WebSocket) => {
-      this.ws = connection;
-      connection.onmessage = this.handleMessage;
+    this.wsServer.on('error', this.handleError);
+    this.wsServer.on('listening', () => this.handleOpenConnection());
+    this.wsServer.on('close', () => {
+      console.log('WebSocket server closed.');
+      this.wsServer = null;
+    });
+
+    this.wsServer.on('connection', (connection: any) => {
+      this.clients.add(connection);
+
+      connection.on('message', (message: any) => this.handleMessage(message));
+
+      connection.on('close', () => {
+        this.clients.delete(connection);
+      });
+
+      connection.on('error', () => {
+        this.clients.delete(connection);
+      });
     });
   }
 
   sendMessage(message: any) {
-    this.ws?.send(JSON.stringify(message));
+    this.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(message));
+      }
+    });
   }
 
   private handleError = () => {
     const serverUrl = this.getServerUrl();
     console.error(`Server ${serverUrl} is not available.`);
 
-    setTimeout(this.setupConnection, this.connectionTimeout);
-  };
+    // If server failed, reset instance so retry can happen
+    this.wsServer = null;
 
-  private closeConnection = (connection: any) => {
-    clearTimeout(connection.pingTimeout);
-
-    if (this.connected) {
-      console.log('Connection has been closed by server.');
-      this.connected = false;
-      this.handleError();
-    }
-  };
-
-  private ping = (connection: any) => {
-    console.log('Ping remote server.');
-    clearTimeout(connection.pingTimeout);
-
-    connection.pingTimeout = setTimeout(() => {
-      connection.terminate();
-    }, 30000 + this.connectionTimeout);
+    setTimeout(() => this.setupConnection(this.options, this.key), this.connectionTimeout);
   };
 
   private handleMessage = (message: any) => {
@@ -97,13 +96,11 @@ export class WsService {
   };
 
   private getServerUrl = (): string => {
-    return `${this.options?.secure ? 'wss' : 'ws'}://${this.options?.host}:${
-      this.options?.port
-    }`;
+    return `${this.options?.secure ? 'wss' : 'ws'}://${this.options?.host}:${this.options?.port
+      }`;
   };
 
   private handleOpenConnection = async () => {
-    this.connected = true;
     const serverUrl = this.getServerUrl();
     console.log(`${serverUrl} has been connected.`);
   };
