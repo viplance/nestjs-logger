@@ -93,7 +93,7 @@ async function connectWebSocket() {
   };
 
   setTimeout(() => {
-    connectWebSocket(); // fix for Safari browser
+    if (!connected) connectWebSocket(); // fix for Safari browser
   }, 300);
 }
 
