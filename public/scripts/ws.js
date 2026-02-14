@@ -1,8 +1,17 @@
 // WebSocket connection
 let socket;
+let connected = false;
+let connectionAttempts = 0;
 let frozen = false;
 
 async function connectWebSocket() {
+  connectionAttempts++;
+
+  if (connectionAttempts > 3) {
+    alert('Failed to connect to WebSocket. Check the `key` url parameter.');
+    return;
+  }
+
   const { hostname, origin, pathname, search } = window.location;
 
   const res = await fetch(`${origin}${pathname}settings${search}`);
@@ -39,11 +48,14 @@ async function connectWebSocket() {
   };
 
   socket.onopen = (event) => {
+    connected = true;
+    connectionAttempts = 0;
     getLogs();
   };
 
   socket.onclose = (event) => {
-    console.log(event);
+    connected = false;
+    console.error(event);
     setTimeout(connectWebSocket, 5000);
   };
 
@@ -79,7 +91,12 @@ async function connectWebSocket() {
       }
     }
   };
+
+  setTimeout(() => {
+    connectWebSocket(); // fix for Safari browser
+  }, 300);
 }
+
 function sendMessage(message) {
   socket.send(JSON.stringify(message));
 }
