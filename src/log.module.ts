@@ -72,8 +72,9 @@ export class LogModule {
         const page = params.page ? parseInt(params.page.toString()) : 1;
         const limit = params.limit ? parseInt(params.limit.toString()) : 50;
         const search = params.search ? params.search.toString() : '';
+        const types = params.types ? params.types.toString().split(',') : [];
 
-        res.json(await logService.getAll(page, limit, search));
+        res.json(await logService.getAll(page, limit, search, types));
       });
 
       // delete log endpoint

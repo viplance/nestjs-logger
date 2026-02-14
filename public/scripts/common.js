@@ -40,7 +40,9 @@ document.addEventListener(`click`, (e) => {
         });
       }
 
-      renderLogs();
+      currentPage = 1;
+      hasMore = true;
+      getLogs(1);
 
       return;
     }
@@ -57,7 +59,9 @@ document.addEventListener(`click`, (e) => {
     selectedLogTypes[`all`] = false;
     unsetSelectorActive(document.querySelector(`li.all`));
 
-    getLogs();
+    currentPage = 1;
+    hasMore = true;
+    getLogs(1);
 
     return;
   }
@@ -145,24 +149,9 @@ function getLogHtmlElement(log) {
 function renderLogs(logList = logs) {
   let html = '';
 
-  logList
-    .filter((log) => {
-      return selectedLogTypes['all'] || selectedLogTypes[log.type];
-    })
-    .filter((log) => {
-      if (text === '') return true;
-
-      return (
-        log.message.toLowerCase().includes(text) ||
-        log.trace?.toLowerCase().includes(text) ||
-        JSON.stringify(log.context || {})
-          .toLowerCase()
-          .includes(text)
-      );
-    })
-    .forEach((log) => {
-      html += getLogHtmlElement(log);
-    });
+  logList.forEach((log) => {
+    html += getLogHtmlElement(log);
+  });
 
   document.getElementById('logs').innerHTML = html;
 }
@@ -181,6 +170,7 @@ async function checkElementsVisibility(logList = logs) {
 
 async function getLogs(page = 1) {
   if (isLoading && page > 1) return;
+
   if (page > 1 && !hasMore) return;
 
   isLoading = true;
@@ -191,6 +181,12 @@ async function getLogs(page = 1) {
   const searchParams = new URLSearchParams(urlSearch);
   const key = searchParams.get('key');
 
+  const types = selectedLogTypes.all
+    ? []
+    : Object.keys(selectedLogTypes).filter(
+        (key) => selectedLogTypes[key] && key !== 'all',
+      );
+
   if (!!socket && socket.readyState === WebSocket.OPEN) {
     socket.send(
       JSON.stringify({
@@ -199,14 +195,20 @@ async function getLogs(page = 1) {
         page,
         limit,
         search: text,
+        types,
       }),
     );
   } else {
     const apiParams = new URLSearchParams(urlSearch);
     apiParams.set('page', page);
     apiParams.set('limit', limit);
+
     if (text) {
       apiParams.set('search', text);
+    }
+
+    if (types.length > 0) {
+      apiParams.set('types', types.join(','));
     }
 
     const res = await fetch(`${origin}${pathname}api?${apiParams.toString()}`);
@@ -303,10 +305,33 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+function matchesFilter(log) {
+  // Check types
+  if (!selectedLogTypes['all'] && !selectedLogTypes[log.type]) {
+    return false;
+  }
+
+  // Check search text
+  if (text !== '') {
+    const matches =
+      log.message.toLowerCase().includes(text) ||
+      log.trace?.toLowerCase().includes(text) ||
+      JSON.stringify(log.context || {})
+        .toLowerCase()
+        .includes(text);
+
+    if (!matches) return false;
+  }
+
+  return true;
+}
+
 function handleWsInsert(log) {
-  logs.unshift(log);
-  checkElementsVisibility();
-  renderLogs();
+  if (matchesFilter(log)) {
+    logs.unshift(log);
+    checkElementsVisibility();
+    renderLogs();
+  }
 }
 
 function handleWsUpdate(updatedLog) {
@@ -314,7 +339,11 @@ function handleWsUpdate(updatedLog) {
   if (idx > -1) {
     logs.splice(idx, 1);
   }
-  logs.unshift(updatedLog);
+
+  if (matchesFilter(updatedLog)) {
+    logs.unshift(updatedLog);
+  }
+
   checkElementsVisibility();
   renderLogs();
   checkAndUpdatePopup();

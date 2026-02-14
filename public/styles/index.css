@@ -416,6 +416,7 @@ nav ul li:hover {
     margin-bottom: 1rem;
     -webkit-overflow-scrolling: touch;
     margin-top: 1rem;
+    height: 2rem;
   }
 
   nav ul {

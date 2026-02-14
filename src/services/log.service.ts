@@ -12,6 +12,7 @@ import {
   EntityManager,
   EntitySchema,
   Like,
+  In,
 } from 'typeorm';
 import { createLogEntity } from '../entities/log.entity';
 import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
@@ -167,7 +168,8 @@ export class LogService implements LoggerService, OnApplicationShutdown {
   async getAll(
     page: number = 1,
     limit: number = 50,
-    search: string = ''
+    search: string = '',
+    types: string[] = []
   ): Promise<any[]> {
     const skip = (page - 1) * limit;
     const take = limit;
@@ -191,17 +193,39 @@ export class LogService implements LoggerService, OnApplicationShutdown {
 
     if (search) {
       if (LogService.options?.database?.type === 'mongodb') {
-        findOptions.where = {
+        const where: any = {
           $or: [
             { message: { $regex: search, $options: 'i' } },
             { trace: { $regex: search, $options: 'i' } },
           ],
         };
+
+        if (types.length > 0) {
+          where.type = { $in: types };
+        }
+
+        findOptions.where = where;
       } else {
         findOptions.where = [
           { message: Like(`%${search}%`) },
           { trace: Like(`%${search}%`) },
         ];
+
+        if (types.length > 0) {
+          findOptions.where.forEach((option: any) => {
+            option.type = In(types);
+          });
+        }
+      }
+    } else if (types.length > 0) {
+      if (LogService.options?.database?.type === 'mongodb') {
+        findOptions.where = {
+          type: { $in: types },
+        };
+      } else {
+        findOptions.where = {
+          type: In(types),
+        };
       }
     }
 

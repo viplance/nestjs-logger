@@ -73,6 +73,7 @@ export class MemoryDbService {
     let data = [...this.db[table]];
 
     // filter by search if where contains $or or Like (simplified for memory db)
+    // filter by search if where contains $or or Like (simplified for memory db)
     if (options?.where) {
       if (options.where.$or) {
         const search = options.where.$or[0].message.$regex;
@@ -86,12 +87,50 @@ export class MemoryDbService {
         // handle Like constraints
         const searchItem = options.where.find((w: any) => w.message);
         if (searchItem && searchItem.message) {
-          const search = searchItem.message.replace(/%/g, '');
-          const regex = new RegExp(search, 'i');
-          data = data.filter(
-            (item) => regex.test(item.message) || regex.test(item.trace || '')
-          );
+          let search = '';
+          if (typeof searchItem.message === 'string') {
+            search = searchItem.message.replace(/%/g, '');
+          } else if (searchItem.message.value) {
+            // FindOperator
+            search = searchItem.message.value.replace(/%/g, '');
+          } else if (searchItem.message._value) {
+            // FindOperator private
+            search = searchItem.message._value.replace(/%/g, '');
+          }
+
+          if (search) {
+            const regex = new RegExp(search, 'i');
+            data = data.filter(
+              (item) => regex.test(item.message) || regex.test(item.trace || '')
+            );
+          }
         }
+      }
+
+      // Handle type filtering
+      let types: string[] | null = null;
+      let typeVal: any;
+
+      if (Array.isArray(options.where)) {
+        typeVal = options.where[0]?.type;
+      } else {
+        typeVal = options.where.type;
+      }
+
+      if (typeVal) {
+        if (Array.isArray(typeVal)) {
+          types = typeVal;
+        } else if (typeVal.value && Array.isArray(typeVal.value)) {
+          types = typeVal.value;
+        } else if (typeVal._value && Array.isArray(typeVal._value)) {
+          types = typeVal._value;
+        } else if (typeVal.$in && Array.isArray(typeVal.$in)) {
+          types = typeVal.$in;
+        }
+      }
+
+      if (types) {
+        data = data.filter((item) => types!.includes(item.type));
       }
     }
 
