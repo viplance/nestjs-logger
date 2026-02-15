@@ -1,4 +1,5 @@
 # @viplance/nestjs-logger
+
 ## NestJS internal logging system
 
 [![npm version](https://img.shields.io/npm/v/@viplance/nestjs-logger.svg?style=flat-square)](https://www.npmjs.com/package/@viplance/nestjs-logger)
@@ -9,8 +10,10 @@
 </p>
 
 ### Installation
+
 1. Install the package `npm i @viplance/nestjs-logger`<br />
 2. Import the module in app.module.ts<br />
+
 ```typescript
     import { LogModule } from '@viplance/nestjs-logger';
 
@@ -35,6 +38,7 @@
 ```
 
 Connect a SQL or NoSQL database to store logs.<br />
+
 ```typescript
     await LogModule.init(app, {
         ...,
@@ -48,6 +52,7 @@ Connect a SQL or NoSQL database to store logs.<br />
 ```
 
 Enable a WebSocket connection to receive the logs in real time.<br />
+
 ```typescript
     await LogModule.init(app, {
         ...,
@@ -60,6 +65,7 @@ Enable a WebSocket connection to receive the logs in real time.<br />
 ```
 
 4. Use the `LogService` in case of custom logs to debug the application.<br />
+
 ```typescript
     import { LogService } from '@viplance/nestjs-logger';
 
@@ -67,17 +73,20 @@ Enable a WebSocket connection to receive the logs in real time.<br />
 
     this.logService.log('Some log information');
 ```
+
 <br />
 
 ### Additional information
 
-- `path`, `key`, `database` and `websocket` properties are optional.
+- Use WebSocket and the default in-memory database for single-instance applications. For multiple instances, use the database option and the HTTP interface
+- `path`, `key`, `database` and `websocket` properties are optional
 - The log UI could be available at `your_application_url`/`path`?key=`key` or WebSocket port
 - The log API could be available at `your_application_url`/`path`/api?key=`key`
 - By default the logs will be stored in memory and deleted when the application stops.<br />
-<br />
+  <br />
 
-### The LogModule options:
+### The LogModule options
+
 - path?: string;
 - key?: string; // access key
 - join?: boolean; // merge the message duplicates
@@ -85,20 +94,21 @@ Enable a WebSocket connection to receive the logs in real time.<br />
 - maxAge?: number; // in days
 - maxSize?: number; // in megabytes
 - database?: DataSourceOptions & {
-    host?: string;
-    port?: string;
-    table?: string;
-    collection?: string;
+  host?: string;
+  port?: string;
+  table?: string;
+  collection?: string;
   };
 - websocket?: {
-    port?: number;
-    namespace?: string;
-    host?: string;
-    secure?: boolean;
+  port?: number;
+  namespace?: string;
+  host?: string;
+  secure?: boolean;
   };
-<br />
+  <br />
 
-### The LogService methods:
+### The LogService methods
+
 - log(message: string, context?: object)
 - error(message: string, context?: object)
 - warn(message: string, context?: object)
