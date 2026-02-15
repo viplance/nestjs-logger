@@ -13,6 +13,7 @@ import {
   EntitySchema,
   Like,
   In,
+  LessThan,
 } from 'typeorm';
 import { createLogEntity } from '../entities/log.entity';
 import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
@@ -81,7 +82,8 @@ export class LogService implements LoggerService, OnApplicationShutdown {
       clearInterval(LogService.timer);
     }
 
-    LogService.timer = setInterval(this.checkRecords, 1000 * 60 * 60); // check one time per hour
+    LogService.timer = setInterval(() => this.cleanUpLogs(), 1000 * 60); // check one time per minute
+    // LogService.timer = setInterval(() => this.cleanUpLogs(), 1000 * 60 * 60); // check one time per hour
 
     return LogService.connection;
   }
@@ -366,23 +368,127 @@ export class LogService implements LoggerService, OnApplicationShutdown {
     return res;
   }
 
-  private async checkRecords() {
-    if (LogService.options?.maxSize) {
-      const latest = await this.getConnection().find(LogService.Log, {
+  private async cleanUpLogs() {
+    const options = LogService.options;
+    if (!options) return;
+
+    const table = LogService.Log;
+    const connection = this.getConnection();
+
+    const deletedIds: any[] = [];
+
+    // maxAge (days)
+    if (options.maxAge) {
+      const cutOffDate = new Date();
+      cutOffDate.setDate(cutOffDate.getDate() - options.maxAge);
+
+      if (LogService.connection) {
+        // Collect IDs before deleting for DB
+        const toDelete = await connection.find(table, {
+          where:
+            options.database?.type === 'mongodb'
+              ? { updatedAt: { $lt: cutOffDate } }
+              : { updatedAt: LessThan(cutOffDate) },
+          select: ['_id'],
+        });
+
+        if (toDelete.length > 0) {
+          const ids = toDelete.map((item) => item._id);
+          deletedIds.push(...ids);
+
+          if (options.database?.type === 'mongodb') {
+            await LogService.connection.manager.delete(table, {
+              _id: { $in: ids },
+            });
+          } else {
+            await LogService.connection
+              .getRepository(table)
+              .createQueryBuilder()
+              .delete()
+              .where('_id IN (:...ids)', { ids })
+              .execute();
+          }
+        }
+      } else {
+        const ids = await this.memoryDbService.prune(
+          table,
+          (item) => new Date(item.updatedAt) < cutOffDate
+        );
+        deletedIds.push(...ids);
+      }
+    }
+
+    // maxRecords (count)
+    if (options.maxRecords) {
+      const all = await connection.find(table, {
         order: { updatedAt: 'DESC' },
-        take: LogService.options?.maxSize,
         select: ['_id'],
       });
 
-      const latestIds = latest.map((item) => item.id);
+      if (all.length > options.maxRecords) {
+        const toKeep = all.slice(0, options.maxRecords).map((item) => item._id);
+        const toDelete = all.slice(options.maxRecords).map((item) => item._id);
 
-      await LogService.connection
-        .getRepository(LogService.Log)
-        .createQueryBuilder()
-        .delete()
-        .from(LogService.Log)
-        .where('_id NOT IN (:...ids)', { ids: latestIds })
-        .execute();
+        deletedIds.push(...toDelete);
+
+        if (LogService.connection) {
+          if (options.database?.type === 'mongodb') {
+            await LogService.connection.manager.delete(table, {
+              _id: { $in: toDelete },
+            });
+          } else {
+            await LogService.connection
+              .getRepository(table)
+              .createQueryBuilder()
+              .delete()
+              .where('_id IN (:...ids)', { ids: toDelete })
+              .execute();
+          }
+        } else {
+          await this.memoryDbService.prune(table, (item) =>
+            toDelete.includes(item._id)
+          );
+        }
+      }
+    }
+
+    // maxSize (megabytes) - Best effort for MemoryDB
+    if (options.maxSize) {
+      if (!LogService.connection) {
+        // Memory DB size estimate
+        const items = this.memoryDbService.getTable(table);
+        const sorted = [...items].sort(
+          (a, b) =>
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        );
+        let totalSize = 0;
+        const keepIds: any[] = [];
+        const removeIds: any[] = [];
+
+        for (const item of sorted) {
+          const size = JSON.stringify(item).length; // Rough size in bytes
+          if ((totalSize + size) / 1024 / 1024 < options.maxSize) {
+            totalSize += size;
+            keepIds.push(item._id);
+          } else {
+            removeIds.push(item._id);
+          }
+        }
+
+        if (removeIds.length > 0) {
+          const ids = await this.memoryDbService.prune(table, (item) =>
+            removeIds.includes(item._id)
+          );
+          deletedIds.push(...ids);
+        }
+      }
+    }
+
+    if (deletedIds.length > 0) {
+      this.wsService.sendMessage({
+        action: 'delete',
+        data: { ids: deletedIds },
+      });
     }
   }
 }

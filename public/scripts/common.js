@@ -353,10 +353,20 @@ function handleWsUpdate(updatedLog) {
   checkAndUpdatePopup();
 }
 
-function handleWsDelete(id) {
-  const idx = logs.findIndex((l) => l._id === id);
-  if (idx > -1) {
-    logs.splice(idx, 1);
+function handleWsDelete(idOrIds) {
+  const ids = Array.isArray(idOrIds) ? idOrIds : [idOrIds];
+  let changed = false;
+
+  ids.forEach((id) => {
+    const idx = logs.findIndex((l) => l._id === id);
+
+    if (idx > -1) {
+      logs.splice(idx, 1);
+      changed = true;
+    }
+  });
+
+  if (changed) {
     checkElementsVisibility();
     renderLogs();
     checkAndUpdatePopup();

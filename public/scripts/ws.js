@@ -90,7 +90,7 @@ async function connectWebSocket() {
           handleWsUpdate(data['data']);
           break;
         case 'delete':
-          handleWsDelete(data['data']._id);
+          handleWsDelete(data['data']._id || data['data'].ids);
           break;
       }
     }

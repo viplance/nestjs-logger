@@ -243,5 +243,20 @@ export class MemoryDbService {
     return true;
   }
 
+  public async prune(
+    entity: EntitySchema,
+    filter: (item: any) => boolean
+  ): Promise<any[]> {
+    const table = this.getTableName(entity);
+    const deleted = this.db[table].filter(filter).map((item) => item._id);
+    this.db[table] = this.db[table].filter((item) => !filter(item));
+    return Promise.resolve(deleted);
+  }
+
+  public getTable(entity: EntitySchema): any[] {
+    const table = this.getTableName(entity);
+    return this.db[table];
+  }
+
   private getTableName = (entity: EntitySchema) => entity.options.name;
 }
