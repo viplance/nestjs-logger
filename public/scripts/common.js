@@ -229,6 +229,10 @@ async function getLogs(page = 1) {
       checkElementsVisibility();
       renderLogs();
       checkAndUpdatePopup();
+
+      if (hasMore) {
+        setTimeout(checkScrollAnchorVisibility, 100);
+      }
     } else {
       isLoading = false;
       document.getElementById('loader').style.display = 'none';
@@ -295,7 +299,7 @@ const observer = new IntersectionObserver(
       getLogs(currentPage + 1);
     }
   },
-  { threshold: 1.0 },
+  { threshold: 0.1 },
 );
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -358,3 +362,22 @@ function handleWsDelete(id) {
     checkAndUpdatePopup();
   }
 }
+
+function checkScrollAnchorVisibility() {
+  if (isLoading || !hasMore) return;
+  const scrollAnchor = document.getElementById('scroll-anchor');
+  if (!scrollAnchor) return;
+
+  const rect = scrollAnchor.getBoundingClientRect();
+  const isVisible = rect.top < window.innerHeight;
+
+  if (isVisible) {
+    getLogs(currentPage + 1);
+  }
+}
+
+window.addEventListener('resize', () => {
+  if (hasMore) {
+    checkScrollAnchorVisibility();
+  }
+});

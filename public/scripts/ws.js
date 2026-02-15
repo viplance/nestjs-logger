@@ -76,6 +76,10 @@ async function connectWebSocket() {
           checkElementsVisibility(logs);
           renderLogs(logs);
           checkAndUpdatePopup();
+
+          if (hasMore) {
+            setTimeout(checkScrollAnchorVisibility, 100);
+          }
           break;
         case 'insert':
           if (currentPage === 1) {

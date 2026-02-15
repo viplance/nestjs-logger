@@ -1,6 +1,6 @@
 {
   "name": "@viplance/nestjs-logger",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "description": "NestJS internal logging system",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
