@@ -254,7 +254,10 @@ export class LogService implements LoggerService, OnApplicationShutdown {
     // find the same log in DB
     let log;
 
-    if (LogService.options && (LogService.options.join || LogService.options.join === undefined)) {
+    if (
+      LogService.options &&
+      (LogService.options.join || LogService.options.join === undefined)
+    ) {
       log = await connection.findOne(LogService.Log, {
         where: {
           type: data.type,
@@ -264,8 +267,8 @@ export class LogService implements LoggerService, OnApplicationShutdown {
     }
 
     const context =
-      data.context instanceof ExecutionContextHost
-        ? this.parseContext(data.context)
+      data.context && typeof (data.context as any).getArgs === 'function'
+        ? this.parseContext(data.context as any)
         : data.context;
 
     if (log) {
@@ -329,7 +332,7 @@ export class LogService implements LoggerService, OnApplicationShutdown {
     return LogService.connection?.manager || this.memoryDbService;
   }
 
-  private parseContext(context: ExecutionContextHost): Partial<Context> {
+  private parseContext(context: any): Partial<Context> {
     const res: Partial<Context> = {};
     const args = context.getArgs();
 
